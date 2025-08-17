@@ -1,28 +1,23 @@
-import { useEffect, useState } from 'react'
-import { ensureCsrf, login, me } from '../lib/api'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function LoginPage() {
+  const { login } = useAuth()
+  const navigate = useNavigate()
+
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [user, setUser] = useState(null)
-
-  useEffect(() => {
-    (async () => {
-      await ensureCsrf()
-      const current = await me()
-      if (current) setUser(current)
-    })()
-  }, [])
 
   const onSubmit = async (e) => {
     e.preventDefault()
     setLoading(true)
     setError(null)
     try {
-      const data = await login(username.trim(), password)
-      setUser(data.user)
+      await login(username.trim(), password)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {
@@ -40,60 +35,49 @@ export default function LoginPage() {
 
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
-            {user ? (
-              <div className="space-y-2">
-                <p className="text-success">
-                  Logged in as <span className="font-medium">{user.username}</span>
-                </p>
-                <p className="text-sm text-base-content/70">
-                  You’re ready to go. Build the lobby next!
-                </p>
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div className="form-control">
+                <label className="label mr-2">
+                  <span className="label-text">Username</span>
+                </label>
+                <input
+                  type="text"
+                  className="input input-bordered"
+                  // placeholder="Username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  required
+                  autoFocus
+                />
               </div>
-            ) : (
-              <form onSubmit={onSubmit} className="space-y-4">
-                <div className="form-control">
-                  <label className="label mr-2">
-                    <span className="label-text">Username</span>
-                  </label>
-                  <input
-                    type="text"
-                    className="input input-bordered"
-                    placeholder="yourname"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    required
-                    autoFocus
-                  />
+
+              <div className="form-control">
+                <label className="label mr-3">
+                  <span className="label-text">Password</span>
+                </label>
+                <input
+                  type="password"
+                  className="input input-bordered"
+                  // placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+
+              {error && (
+                <div className="alert alert-error">
+                  <span>{error}</span>
                 </div>
+              )}
 
-                <div className="form-control">
-                  <label className="label mr-3">
-                    <span className="label-text">Password</span>
-                  </label>
-                  <input
-                    type="password"
-                    className="input input-bordered"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-
-                {error && (
-                  <div className="alert alert-error">
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  className={`btn btn-primary w-full ${loading ? 'btn-disabled' : ''}`}
-                >
-                  {loading ? 'Signing in…' : 'Sign in'}
-                </button>
-              </form>
-            )}
+              <button
+                type="submit"
+                className={`btn btn-primary w-full ${loading ? 'btn-disabled' : ''}`}
+              >
+                {loading ? 'Signing in…' : 'Sign in'}
+              </button>
+            </form>
           </div>
         </div>
 
