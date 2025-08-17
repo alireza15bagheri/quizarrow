@@ -1,0 +1,26 @@
+# Backend
+*.pyc
+__pycache__/
+db.sqlite3
+.env
+.env.backend
+venv/
+media/
+staticfiles/
+
+# React/Vite project
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+*.cache
+.vite/
+.vscode/
+.idea/
+
+# System or editor files
+*.swp
+Thumbs.db
+TODO.txt
+development-plan.html
