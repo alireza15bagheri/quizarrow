@@ -6,7 +6,8 @@ export default function Navbar() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  const isActive = (path) => location.pathname === path
+  // Highlight if the current pathname starts with the given path
+  const isActive = (path) => location.pathname.startsWith(path)
 
   const onLogout = async () => {
     await logout()
@@ -27,10 +28,20 @@ export default function Navbar() {
           </div>
           <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
             <li>
-              <Link className={isActive('/dashboard') ? 'active' : ''} to="/dashboard">Dashboard</Link>
+              <Link
+                className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
+                to="/dashboard"
+              >
+                Dashboard
+              </Link>
             </li>
             <li>
-              <a className="disabled" title="Coming soon">Lobby</a>
+              <Link
+                className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
+                to="/lobby"
+              >
+                Lobby
+              </Link>
             </li>
             <li>
               <a className="disabled" title="Coming soon">Quiz</a>
@@ -46,10 +57,20 @@ export default function Navbar() {
       <div className="hidden md:flex">
         <ul className="menu menu-horizontal px-1">
           <li>
-            <Link className={isActive('/dashboard') ? 'active' : ''} to="/dashboard">Dashboard</Link>
+            <Link
+              className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
+              to="/dashboard"
+            >
+              Dashboard
+            </Link>
           </li>
           <li>
-            <a className="disabled" title="Coming soon">Lobby</a>
+            <Link
+              className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
+              to="/lobby"
+            >
+              Lobby
+            </Link>
           </li>
           <li>
             <a className="disabled" title="Coming soon">Quiz</a>

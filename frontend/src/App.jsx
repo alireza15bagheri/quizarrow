@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
+import LobbyPage from './pages/LobbyPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLayout from './components/AppLayout'
 
@@ -48,10 +49,21 @@ export default function App() {
         />
         <Route
           path="/dashboard"
-          element={
+          element=
+          {
             <ProtectedRoute>
               <AppLayout>
                 <DashboardPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/lobby"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <LobbyPage />
               </AppLayout>
             </ProtectedRoute>
           }
