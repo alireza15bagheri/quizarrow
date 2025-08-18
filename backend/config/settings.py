@@ -13,8 +13,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # third-party
+    "rest_framework",
     # local apps
     "accounts",
+    "game",
 ]
 
 MIDDLEWARE = [
@@ -71,3 +74,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Useful when hitting backend directly from http://localhost:5173 during dev
 CSRF_TRUSTED_ORIGINS = ["http://localhost:5173"]
+
+# Media for question images
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"
+
+# DRF baseline
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticatedOrReadOnly",
+    ],
+}
