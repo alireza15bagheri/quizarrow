@@ -3,11 +3,39 @@ from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth import authenticate, login, logout
 
+# --- Response helpers (consistent shape) ---
+
+def json_ok(payload: dict | None = None, status: int = 200):
+    """
+    Success shape: preserves existing keys for compatibility, and adds ok: true.
+    """
+    data = {"ok": True}
+    if payload:
+        data.update(payload)
+    return JsonResponse(data, status=status)
+
+def json_error(message: str, *, code: str = "error", status: int = 400, details: dict | None = None):
+    """
+    Error shape: structured 'error' + legacy 'detail'/'error' for compatibility.
+    """
+    body = {
+        "ok": False,
+        "error": {"code": code, "message": message, "details": details or {}},
+        "detail": message,  # legacy
+        "error": message,   # legacy (frontend currently checks this)
+    }
+    return JsonResponse(body, status=status)
+
+# --- CSRF failure as JSON ---
+
+def csrf_failure_view(request, reason=""):
+    return json_error("CSRF verification failed", code="csrf_failed", status=403, details={"reason": reason})
+
 @ensure_csrf_cookie
 @require_GET
 def csrf(request):
     # Sets csrftoken cookie on the response
-    return JsonResponse({"detail": "CSRF cookie set"})
+    return json_ok({"detail": "CSRF cookie set"})
 
 @csrf_protect
 @require_POST
@@ -16,29 +44,32 @@ def login_view(request):
     try:
         payload = json.loads(request.body.decode("utf-8"))
     except Exception:
-        return JsonResponse({"error": "Invalid JSON"}, status=400)
+        return json_error("Invalid JSON", code="invalid_json", status=400)
 
     username = (payload.get("username") or "").strip()
     password = payload.get("password") or ""
 
     if not username or not password:
-        return JsonResponse({"error": "Missing credentials"}, status=400)
+        return json_error("Missing credentials", code="missing_credentials", status=400)
 
     user = authenticate(request, username=username, password=password)
     if user is None:
-        return JsonResponse({"error": "Invalid username or password"}, status=401)
+        return json_error("Invalid username or password", code="invalid_credentials", status=401)
 
     login(request, user)
-    return JsonResponse({"user": {"id": user.id, "username": user.username}})
+    # Keep existing "user" key for frontend compatibility
+    return json_ok({"user": {"id": user.id, "username": user.username}})
 
+@csrf_protect
 @require_POST
 def logout_view(request):
     logout(request)
-    return JsonResponse({"detail": "Logged out"})
+    return json_ok({"detail": "Logged out"})
 
 @require_GET
 def me(request):
     if request.user.is_authenticated:
         u = request.user
-        return JsonResponse({"id": u.id, "username": u.username})
-    return JsonResponse({"detail": "Anonymous"}, status=401)
+        # Preserve shape used by frontend (object with id/username)
+        return json_ok({"id": u.id, "username": u.username})
+    return json_error("Anonymous", code="anonymous", status=401)
