@@ -73,7 +73,12 @@ export default function Navbar() {
             </Link>
           </li>
           <li>
-            <a className="disabled" title="Coming soon">Quiz</a>
+            <Link
+              className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
+              to="/quizzes/mine"
+            >
+              My Quizzes
+            </Link>
           </li>
         </ul>
       </div>
