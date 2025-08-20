@@ -51,3 +51,23 @@ export async function logout() {
   })
   if (!res.ok) throw new Error('Logout failed')
 }
+
+export async function hostNewQuiz(payload) {
+  const csrftoken = getCookie('csrftoken')
+  const res = await fetch(`${API_BASE}/game/quizzes/new/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken || '',
+    },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error?.message || data.detail || 'Failed to create quiz')
+  }
+  return res.json()
+}
+
+

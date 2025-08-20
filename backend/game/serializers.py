@@ -122,9 +122,36 @@ class QuestionAdminSerializer(serializers.ModelSerializer):
 # --- Quizzes ---
 
 class QuizQuestionAdminSerializer(serializers.ModelSerializer):
-    question = QuestionAdminSerializer(read_only=True)
+    question = QuestionAdminSerializer(required=False)  # <-- allow nested creation
     question_id = serializers.PrimaryKeyRelatedField(
-        source="question", queryset=Question.objects.all(), write_only=True
+        source="question", queryset=Question.objects.all(), write_only=True, required=False
+    )
+    effective_points = serializers.SerializerMethodField()
+    effective_timer = serializers.SerializerMethodField()
+
+    class Meta:
+        model = QuizQuestion
+        fields = [
+            "id",
+            "order",
+            "points",
+            "timer_seconds",
+            "effective_points",
+            "effective_timer",
+            "question",
+            "question_id",
+        ]
+
+    def get_effective_points(self, obj):
+        return obj.effective_points()
+
+    def get_effective_timer(self, obj):
+        return obj.effective_timer()
+
+class QuizQuestionAdminSerializer(serializers.ModelSerializer):
+    question = QuestionAdminSerializer(required=False)
+    question_id = serializers.PrimaryKeyRelatedField(
+        source="question", queryset=Question.objects.all(), write_only=True, required=False
     )
     effective_points = serializers.SerializerMethodField()
     effective_timer = serializers.SerializerMethodField()
@@ -150,7 +177,7 @@ class QuizQuestionAdminSerializer(serializers.ModelSerializer):
 
 
 class QuizAdminSerializer(serializers.ModelSerializer):
-    quiz_questions = QuizQuestionAdminSerializer(many=True)
+    quiz_questions = QuizQuestionAdminSerializer(many=True, required=False)
     tags = TagSerializer(many=True, read_only=True)
     tag_ids = serializers.PrimaryKeyRelatedField(
         source="tags", many=True, queryset=Tag.objects.all(), write_only=True, required=False
@@ -178,23 +205,18 @@ class QuizAdminSerializer(serializers.ModelSerializer):
         if tags:
             quiz.tags.set(tags)
         for link in qlinks:
+            question_data = link.pop("question", None)
+            if question_data:
+                question = Question.objects.create(
+                    author=self.context["request"].user, **question_data
+                )
+                link["question"] = question
             QuizQuestion.objects.create(quiz=quiz, **link)
         return quiz
 
-    def update(self, instance, validated_data):
-        qlinks = validated_data.pop("quiz_questions", None)
-        tags = validated_data.pop("tags", None)
-        for attr, val in validated_data.items():
-            setattr(instance, attr, val)
-        instance.save()
-        if tags is not None:
-            instance.tags.set(tags)
-        if qlinks is not None:
-            # naive replace; optimize later if needed
-            instance.quiz_questions.all().delete()
-            for link in qlinks:
-                QuizQuestion.objects.create(quiz=instance, **link)
-        return instance
+
+
+
 
 
 class QuizQuestionPublicSerializer(serializers.ModelSerializer):

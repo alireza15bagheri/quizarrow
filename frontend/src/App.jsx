@@ -4,6 +4,7 @@ import DashboardPage from './pages/DashboardPage'
 import LobbyPage from './pages/LobbyPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLayout from './components/AppLayout'
+import HostNewQuizPage from './pages/HostNewQuizPage'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -64,6 +65,16 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <LobbyPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/new"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <HostNewQuizPage />
               </AppLayout>
             </ProtectedRoute>
           }

@@ -1,8 +1,11 @@
 import { useAuth } from '../context/AuthContext'
+import { useNavigate } from 'react-router-dom' 
+
 
 export default function DashboardPage() {
   const { user } = useAuth()
-
+  const navigate = useNavigate()
+  
   return (
     <div className="w-full max-w-2xl mx-auto">
       <div className="text-center mb-6">
@@ -18,9 +21,13 @@ export default function DashboardPage() {
             <h2 className="card-title">Create quiz</h2>
             <p>Start a new live quiz session for your players.</p>
             <div className="card-actions justify-end">
-              <button className="btn btn-primary" disabled>
-                Coming soon
+              <button
+                className="btn btn-primary"
+                onClick={() => navigate('/quizzes/new')}
+              >
+                Host new quiz
               </button>
+
             </div>
           </div>
         </div>
