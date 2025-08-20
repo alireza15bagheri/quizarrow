@@ -9,5 +9,3 @@ class HostNewQuizView(generics.CreateAPIView):
     serializer_class = QuizAdminSerializer
     permission_classes = [permissions.IsAuthenticated]
 
-    def perform_create(self, serializer):
-        serializer.save(host=self.request.user)
