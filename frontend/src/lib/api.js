@@ -70,4 +70,21 @@ export async function hostNewQuiz(payload) {
   return res.json()
 }
 
+export async function getMyQuizzes() {
+  const res = await fetch(`${API_BASE}/game/quizzes/mine/`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  if (!res.ok) throw new Error('Failed to fetch quizzes')
+  return res.json()
+}
 
+export async function deleteQuiz(id) {
+  const csrftoken = getCookie('csrftoken')
+  const res = await fetch(`${API_BASE}/game/quizzes/mine/${id}/`, {
+    method: 'DELETE',
+    headers: { 'X-CSRFToken': csrftoken || '' },
+    credentials: 'include',
+  })
+  if (!res.ok) throw new Error('Failed to delete quiz')
+}

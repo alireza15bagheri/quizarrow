@@ -1,7 +1,6 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom' 
 
-
 export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -27,7 +26,21 @@ export default function DashboardPage() {
               >
                 Host new quiz
               </button>
+            </div>
+          </div>
+        </div>
 
+        <div className="card bg-base-100 shadow-xl">
+          <div className="card-body">
+            <h2 className="card-title">My quizzes</h2>
+            <p>Browse and manage your created quizzes.</p>
+            <div className="card-actions justify-end">
+              <button
+                className="btn btn-secondary"
+                onClick={() => navigate('/quizzes/mine')}
+              >
+                View quizzes
+              </button>
             </div>
           </div>
         </div>
