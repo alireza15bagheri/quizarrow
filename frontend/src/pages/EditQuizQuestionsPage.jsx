@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { addQuizQuestion } from '../lib/api'
 
-// NEW helper to fetch quiz detail
+// helper to fetch quiz detail from backend
 async function getQuizDetail(id) {
   const res = await fetch(`/api/game/quizzes/${id}/`, {
     method: 'GET',
@@ -17,23 +17,30 @@ async function getQuizDetail(id) {
 export default function EditQuizQuestionsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
+
+  // quiz meta
+  const [quizTitle, setQuizTitle] = useState('')
+  const [quizDescription, setQuizDescription] = useState('')
+
+  // question form state
   const [text, setText] = useState('')
   const [choices, setChoices] = useState(['', '', '', ''])
   const [correctIndex, setCorrectIndex] = useState(0)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
-  // NEW: track current max order from existing quiz_questions
+  // current max order
   const [maxOrder, setMaxOrder] = useState(-1)
   const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch quiz detail on mount
     async function fetchQuiz() {
       try {
         const quiz = await getQuizDetail(id)
+        setQuizTitle(quiz.title)
+        setQuizDescription(quiz.description)
         const currentMax = quiz.quiz_questions?.length
-          ? Math.max(...quiz.quiz_questions.map(q => q.order))
+          ? Math.max(...quiz.quiz_questions.map((q) => q.order))
           : -1
         setMaxOrder(currentMax)
       } catch (err) {
@@ -59,7 +66,7 @@ export default function EditQuizQuestionsPage() {
     const payload = {
       quiz_questions: [
         {
-          order: maxOrder + 1, // FIX: assign next available order
+          order: maxOrder + 1,
           question: {
             type: 'mcq',
             difficulty: 'medium',
@@ -89,12 +96,22 @@ export default function EditQuizQuestionsPage() {
 
   return (
     <div className="max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold mb-4">Edit Quiz Questions</h1>
+      {/* quiz title + description */}
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold">{quizTitle}</h1>
+        {quizDescription && (
+          <p className="text-base-content/70 mt-1">{quizDescription}</p>
+        )}
+      </div>
+
+      <h2 className="text-2xl font-semibold mb-4">Add a Question</h2>
+
       {error && (
         <div className="alert alert-error mb-4">
           <span>{error}</span>
         </div>
       )}
+
       <form onSubmit={onSubmit} className="space-y-4">
         <div>
           <label className="label">Question text</label>
