@@ -6,6 +6,7 @@ import { AuthProvider, useAuth } from './context/AuthContext'
 import AppLayout from './components/AppLayout'
 import CreateQuizPage from './pages/CreateQuizPage'
 import MyQuizzesPage from './pages/MyQuizzesPage'
+import EditQuizQuestionsPage from './pages/EditQuizQuestionsPage'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -85,6 +86,16 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <MyQuizzesPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quizzes/:id/edit"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <EditQuizQuestionsPage />
               </AppLayout>
             </ProtectedRoute>
           }

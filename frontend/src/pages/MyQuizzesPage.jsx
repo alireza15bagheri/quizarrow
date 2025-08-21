@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { getMyQuizzes, deleteQuiz } from '../lib/api'
+import { useNavigate } from 'react-router-dom'
 
 export default function MyQuizzesPage() {
   const [quizzes, setQuizzes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const navigate = useNavigate()
 
   const fetchData = async () => {
     setLoading(true)
@@ -48,7 +50,7 @@ export default function MyQuizzesPage() {
               <tr>
                 <th>Title</th>
                 <th>Created</th>
-                <th></th>
+                <th colSpan={2}></th>
               </tr>
             </thead>
             <tbody>
@@ -56,6 +58,14 @@ export default function MyQuizzesPage() {
                 <tr key={quiz.id}>
                   <td>{quiz.title}</td>
                   <td>{new Date(quiz.created_at).toLocaleString()}</td>
+                  <td>
+                    <button
+                      className="btn btn-accent btn-sm"
+                      onClick={() => navigate(`/quizzes/${quiz.id}/edit`)}
+                    >
+                      Edit
+                    </button>
+                  </td>
                   <td>
                     <button
                       className="btn btn-error btn-sm"

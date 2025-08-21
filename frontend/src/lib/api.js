@@ -88,3 +88,21 @@ export async function deleteQuiz(id) {
   })
   if (!res.ok) throw new Error('Failed to delete quiz')
 }
+
+export async function addQuizQuestion(quizId, question) {
+  const csrftoken = getCookie('csrftoken')
+  const res = await fetch(`${API_BASE}/game/quizzes/${quizId}/questions/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken || '',
+    },
+    body: JSON.stringify(question),
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error?.message || data.detail || 'Failed to add question')
+  }
+  return res.json()
+}
