@@ -1,53 +1,40 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useState } from 'react'
 
 export default function Navbar() {
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
-  // Highlight if the current pathname starts with the given path
   const isActive = (path) => location.pathname.startsWith(path)
 
   const onLogout = async () => {
     await logout()
+    setMobileOpen(false)
     navigate('/login', { replace: true })
   }
 
+  const closeMobile = () => setMobileOpen(false)
+
   return (
-    <div className="navbar bg-base-100 shadow-sm">
+    <div className="navbar bg-base-100 shadow-sm relative">
       <div className="flex-1">
-        {/* Mobile menu */}
-        <div className="dropdown md:hidden">
-          <div tabIndex={0} role="button" className="btn btn-ghost" aria-label="Open menu">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none"
-                 viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
-          </div>
-          <ul tabIndex={0} className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow">
-            <li>
-              <Link
-                className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
-                to="/dashboard"
-              >
-                Dashboard
-              </Link>
-            </li>
-            <li>
-              <Link
-                className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
-                to="/lobby"
-              >
-                Lobby
-              </Link>
-            </li>
-            <li>
-              <a className="disabled" title="Coming soon">Quiz</a>
-            </li>
-          </ul>
-        </div>
+        {/* Mobile hamburger */}
+        <button
+          type="button"
+          className="btn btn-ghost md:hidden"
+          aria-label="Open menu"
+          aria-expanded={mobileOpen}
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none"
+               viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
+                  d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
 
         {/* Brand */}
         <Link to="/dashboard" className="btn btn-ghost text-xl">Quizarrow</Link>
@@ -92,6 +79,49 @@ export default function Navbar() {
           Log out
         </button>
       </div>
+
+      {/* Mobile panel + overlay */}
+      {mobileOpen && (
+        <>
+          {/* click-away overlay */}
+          <div
+            className="fixed inset-0 z-40 md:hidden"
+            onClick={closeMobile}
+            aria-hidden="true"
+          />
+          <div className="absolute left-2 top-14 z-50 md:hidden">
+            <ul className="menu menu-sm bg-base-100 rounded-box w-56 p-2 shadow">
+              <li>
+                <Link
+                  to="/dashboard"
+                  onClick={closeMobile}
+                  className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
+                >
+                  Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/lobby"
+                  onClick={closeMobile}
+                  className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
+                >
+                  Lobby
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/quizzes/mine"
+                  onClick={closeMobile}
+                  className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
+                >
+                  My Quizzes
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </>
+      )}
     </div>
   )
 }

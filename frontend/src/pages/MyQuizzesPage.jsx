@@ -61,7 +61,7 @@ export default function MyQuizzesPage() {
                       className="btn btn-error btn-sm"
                       onClick={() => onDelete(quiz.id)}
                     >
-                      Delete
+                      X
                     </button>
                   </td>
                 </tr>
