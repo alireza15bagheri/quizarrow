@@ -7,6 +7,7 @@ db.sqlite3
 venv/
 media/
 staticfiles/
+backend/.env
 
 # React/Vite project
 node_modules/
