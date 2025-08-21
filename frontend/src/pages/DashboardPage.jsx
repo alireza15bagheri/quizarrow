@@ -18,13 +18,13 @@ export default function DashboardPage() {
         <div className="card bg-base-100 shadow-xl">
           <div className="card-body">
             <h2 className="card-title">Create quiz</h2>
-            <p>Start a new live quiz session for your players.</p>
+            <p>Start building a new quiz to host later.</p>
             <div className="card-actions justify-end">
               <button
                 className="btn btn-primary"
                 onClick={() => navigate('/quizzes/new')}
               >
-                Host new quiz
+                Create quiz
               </button>
             </div>
           </div>
