@@ -29,6 +29,11 @@ export default function LoginPage() {
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
+          <img
+            src="/quiz.png"
+            alt="Quizarrow logo"
+            className="mx-auto mb-4 w-24 h-24 sm:w-32 sm:h-32 object-contain"
+          />
           <h1 className="text-3xl font-bold">Quizarrow</h1>
           <p className="text-base-content/70 mt-1">Sign in to continue</p>
         </div>
