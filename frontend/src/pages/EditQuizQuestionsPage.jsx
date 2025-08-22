@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { addQuizQuestion } from '../lib/api'
+import { useParams } from 'react-router-dom'
+import { addQuizQuestion, deleteQuizQuestion } from '../lib/api'
 
 // helper to fetch quiz detail from backend
 async function getQuizDetail(id) {
@@ -16,7 +16,6 @@ async function getQuizDetail(id) {
 
 export default function EditQuizQuestionsPage() {
   const { id } = useParams()
-  const navigate = useNavigate()
 
   // quiz meta
   const [quizTitle, setQuizTitle] = useState('')
@@ -33,12 +32,16 @@ export default function EditQuizQuestionsPage() {
   const [maxOrder, setMaxOrder] = useState(-1)
   const [initialLoading, setInitialLoading] = useState(true)
 
+  // existing questions
+  const [questions, setQuestions] = useState([])
+
   useEffect(() => {
     async function fetchQuiz() {
       try {
         const quiz = await getQuizDetail(id)
         setQuizTitle(quiz.title)
         setQuizDescription(quiz.description)
+        setQuestions(quiz.quiz_questions || [])
         const currentMax = quiz.quiz_questions?.length
           ? Math.max(...quiz.quiz_questions.map((q) => q.order))
           : -1
@@ -82,11 +85,32 @@ export default function EditQuizQuestionsPage() {
 
     try {
       await addQuizQuestion(id, payload)
-      navigate('/quizzes/mine')
+      // refresh list
+      const quiz = await getQuizDetail(id)
+      setQuestions(quiz.quiz_questions || [])
+      setMaxOrder(
+        quiz.quiz_questions?.length
+          ? Math.max(...quiz.quiz_questions.map((q) => q.order))
+          : -1
+      )
+      // reset form
+      setText('')
+      setChoices(['', '', '', ''])
+      setCorrectIndex(0)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const onDeleteQuestion = async (qid) => {
+    if (!window.confirm('Delete this question?')) return
+    try {
+      await deleteQuizQuestion(id, qid)
+      setQuestions((prev) => prev.filter((q) => q.id !== qid))
+    } catch (err) {
+      alert(err.message)
     }
   }
 
@@ -112,7 +136,7 @@ export default function EditQuizQuestionsPage() {
         </div>
       )}
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4 mb-8">
         <div>
           <label className="label">Question text</label>
           <textarea
@@ -136,6 +160,7 @@ export default function EditQuizQuestionsPage() {
               name="correct"
               checked={correctIndex === i}
               onChange={() => setCorrectIndex(i)}
+              aria-label={`Mark choice ${i + 1} as correct`}
             />
           </div>
         ))}
@@ -143,6 +168,51 @@ export default function EditQuizQuestionsPage() {
           {loading ? 'Saving…' : 'Save Question'}
         </button>
       </form>
+
+      {/* Existing questions list */}
+      <h2 className="text-2xl font-semibold mb-4">Existing Questions</h2>
+      {questions.length === 0 ? (
+        <p>No questions added yet.</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>Text</th>
+                <th>Points</th>
+                <th>Timer</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              {questions
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((q) => (
+                  <tr key={q.id}>
+                    <td>{q.order}</td>
+                    <td className="text-left">
+                      {q.question?.text?.length > 120
+                        ? q.question.text.slice(0, 120) + '…'
+                        : q.question?.text || '(no text)'}
+                    </td>
+                    <td>{q.effective_points}</td>
+                    <td>{q.effective_timer}s</td>
+                    <td className="text-right">
+                      <button
+                        className="btn btn-error btn-xs"
+                        onClick={() => onDeleteQuestion(q.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

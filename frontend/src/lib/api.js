@@ -106,3 +106,16 @@ export async function addQuizQuestion(quizId, question) {
   }
   return res.json()
 }
+
+export async function deleteQuizQuestion(quizId, questionId) {
+  const csrftoken = getCookie('csrftoken')
+  const res = await fetch(`${API_BASE}/game/quizzes/${quizId}/questions/${questionId}/`, {
+    method: 'DELETE',
+    headers: { 'X-CSRFToken': csrftoken || '' },
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error?.message || data.detail || 'Failed to delete question')
+  }
+}
