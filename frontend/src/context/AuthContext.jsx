@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { ensureCsrf, login as apiLogin, logout as apiLogout, me } from '../lib/api/auth'
+import * as authApi from '../lib/api/auth'
 
 const AuthContext = createContext(null)
 
@@ -12,8 +12,8 @@ export function AuthProvider({ children }) {
     let mounted = true
     ;(async () => {
       try {
-        await ensureCsrf()
-        const u = await me()
+        await authApi.ensureCsrf()
+        const u = await authApi.me()
         if (mounted && u) setUser(u)
       } finally {
         if (mounted) setLoading(false)
@@ -25,13 +25,13 @@ export function AuthProvider({ children }) {
   }, [])
 
   const login = async (username, password) => {
-    const res = await apiLogin(username, password)
+    const res = await authApi.login(username, password)
     setUser(res.user)
     return res.user
   }
 
   const logout = async () => {
-    await apiLogout()
+    await authApi.logout()
     setUser(null)
   }
 

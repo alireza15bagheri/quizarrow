@@ -1,46 +1,24 @@
-import { API_BASE, getCookie } from './utils'
+import { apiRequest } from './utils'
 
 export async function ensureCsrf() {
-  await fetch(`${API_BASE}/auth/csrf/`, {
-    method: 'GET',
-    credentials: 'include',
-  })
+  return apiRequest('/auth/csrf/', { method: 'GET' })
 }
 
 export async function login(username, password) {
-  const csrftoken = getCookie('csrftoken')
-  const res = await fetch(`${API_BASE}/auth/login/`, {
+  return apiRequest('/auth/login/', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': csrftoken || '',
-    },
-    body: JSON.stringify({ username, password }),
-    credentials: 'include',
+    body: { username, password },
   })
-  if (!res.ok) {
-    const data = await res.json().catch(() => ({}))
-    const msg = data.error || data.detail || 'Login failed'
-    throw new Error(msg)
-  }
-  return res.json()
 }
 
 export async function me() {
-  const res = await fetch(`${API_BASE}/auth/me/`, {
-    method: 'GET',
-    credentials: 'include',
-  })
-  if (!res.ok) return null
-  return res.json()
+  try {
+    return await apiRequest('/auth/me/', { method: 'GET' })
+  } catch {
+    return null
+  }
 }
 
 export async function logout() {
-  const csrftoken = getCookie('csrftoken')
-  const res = await fetch(`${API_BASE}/auth/logout/`, {
-    method: 'POST',
-    headers: { 'X-CSRFToken': csrftoken || '' },
-    credentials: 'include',
-  })
-  if (!res.ok) throw new Error('Logout failed')
+  return apiRequest('/auth/logout/', { method: 'POST' })
 }
