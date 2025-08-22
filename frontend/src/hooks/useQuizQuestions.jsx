@@ -1,42 +1,26 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
-import { getQuizDetail } from '../lib/api/quizzes'
+import { useCallback, useMemo } from 'react'
 import { addQuizQuestion, deleteQuizQuestion, updateQuizQuestion } from '../lib/api/questions'
+import useQuizMeta from './useQuizMeta'
 
+/**
+ * Hook for managing quiz questions (CRUD) while reusing quiz metadata from useQuizMeta.
+ */
 export default function useQuizQuestions(quizId) {
-  const [quizTitle, setQuizTitle] = useState('')
-  const [quizDescription, setQuizDescription] = useState('')
-  const [questions, setQuestions] = useState([])
-  const [initialLoading, setInitialLoading] = useState(true)
-  const [error, setError] = useState(null)
+  const {
+    quizTitle,
+    quizDescription,
+    questions,
+    setQuestions,
+    loading,
+    error,
+    refresh,
+    setError,
+  } = useQuizMeta(quizId)
 
   const maxOrder = useMemo(() => {
     if (!questions.length) return -1
     return Math.max(...questions.map((q) => q.order))
   }, [questions])
-
-  const refresh = useCallback(async () => {
-    setError(null)
-    const quiz = await getQuizDetail(quizId)
-    setQuizTitle(quiz.title)
-    setQuizDescription(quiz.description)
-    setQuestions(quiz.quiz_questions || [])
-  }, [quizId])
-
-  useEffect(() => {
-    let mounted = true
-    ;(async () => {
-      try {
-        await refresh()
-      } catch (e) {
-        if (mounted) setError(e.message || 'Failed to load quiz')
-      } finally {
-        if (mounted) setInitialLoading(false)
-      }
-    })()
-    return () => {
-      mounted = false
-    }
-  }, [refresh])
 
   const addMcqQuestion = useCallback(
     async (text, choices, correctIndex) => {
@@ -60,7 +44,7 @@ export default function useQuizQuestions(quizId) {
       await addQuizQuestion(quizId, payload)
       await refresh()
     },
-    [quizId, maxOrder, refresh]
+    [quizId, maxOrder, refresh, setError]
   )
 
   const removeQuestion = useCallback(
@@ -70,12 +54,11 @@ export default function useQuizQuestions(quizId) {
       // Optimistic update
       setQuestions((prev) => prev.filter((q) => q.id !== quizQuestionId))
     },
-    [quizId]
+    [quizId, setQuestions, setError]
   )
 
   const updateQuestionSettings = useCallback(
     async (quizQuestionId, updates) => {
-      // Allow blank input to reset to defaults by sending null
       const normalizeInt = (v) =>
         v === '' || v === undefined || v === null ? null : parseInt(v, 10)
 
@@ -93,7 +76,7 @@ export default function useQuizQuestions(quizId) {
     quizTitle,
     quizDescription,
     questions,
-    initialLoading,
+    initialLoading: loading,
     error,
     addMcqQuestion,
     removeQuestion,
