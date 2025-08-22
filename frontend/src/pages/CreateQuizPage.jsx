@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { hostNewQuiz } from '../lib/api'
+import { hostNewQuiz } from '../lib/api/quizzes'
 
 export default function CreateQuizPage() {
   const [title, setTitle] = useState('')

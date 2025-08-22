@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { addQuizQuestion, deleteQuizQuestion } from '../lib/api'
+import { addQuizQuestion, deleteQuizQuestion } from '../lib/api/questions'
 
 // helper to fetch quiz detail from backend
 async function getQuizDetail(id) {

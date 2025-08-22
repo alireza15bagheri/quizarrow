@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { getMyQuizzes, deleteQuiz } from '../lib/api'
+import { getMyQuizzes, deleteQuiz } from '../lib/api/quizzes'
 import { useNavigate } from 'react-router-dom'
 
 export default function MyQuizzesPage() {
