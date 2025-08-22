@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { getQuizDetail } from '../lib/api/quizzes'
-import { addQuizQuestion, deleteQuizQuestion } from '../lib/api/questions'
+import { addQuizQuestion, deleteQuizQuestion, updateQuizQuestion } from '../lib/api/questions'
 
 export default function useQuizQuestions(quizId) {
   const [quizTitle, setQuizTitle] = useState('')
@@ -73,6 +73,22 @@ export default function useQuizQuestions(quizId) {
     [quizId]
   )
 
+  const updateQuestionSettings = useCallback(
+    async (quizQuestionId, updates) => {
+      // Allow blank input to reset to defaults by sending null
+      const normalizeInt = (v) =>
+        v === '' || v === undefined || v === null ? null : parseInt(v, 10)
+
+      const payload = {}
+      if ('points' in updates) payload.points = normalizeInt(updates.points)
+      if ('timer_seconds' in updates) payload.timer_seconds = normalizeInt(updates.timer_seconds)
+
+      await updateQuizQuestion(quizId, quizQuestionId, payload)
+      await refresh()
+    },
+    [quizId, refresh]
+  )
+
   return {
     quizTitle,
     quizDescription,
@@ -81,6 +97,7 @@ export default function useQuizQuestions(quizId) {
     error,
     addMcqQuestion,
     removeQuestion,
+    updateQuestionSettings,
     refresh,
   }
 }

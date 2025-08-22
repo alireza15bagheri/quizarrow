@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, NotFound
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
@@ -83,8 +83,8 @@ class MyQuizDetailView(generics.RetrieveAPIView):
     def get_queryset(self):
         # Only quizzes created by the logged-in user
         return Quiz.objects.filter(host=self.request.user)
-    
-    
+
+
 class QuizQuestionDeleteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
@@ -99,3 +99,22 @@ class QuizQuestionDeleteView(APIView):
         quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
         quiz_question.delete()
         return Response({"ok": True, "detail": "Question removed"}, status=status.HTTP_204_NO_CONTENT)
+
+
+class QuizQuestionUpdateView(APIView):
+    """
+    Partially update a quiz question link (points, timer_seconds).
+    Sending null resets to the Question defaults (effective_* fields).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, pk, qid):
+        quiz = get_object_or_404(Quiz, pk=pk)
+        if quiz.host != request.user:
+            raise PermissionDenied("You do not have permission to edit this quiz.")
+
+        quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
+        serializer = QuizQuestionAdminSerializer(quiz_question, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)

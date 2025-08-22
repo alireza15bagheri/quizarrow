@@ -13,6 +13,7 @@ export default function EditQuizQuestionsPage() {
     error,
     addMcqQuestion,
     removeQuestion,
+    updateQuestionSettings,
   } = useQuizQuestions(id)
 
   if (initialLoading) {
@@ -39,7 +40,11 @@ export default function EditQuizQuestionsPage() {
       <QuestionForm onAdd={addMcqQuestion} className="mb-8" />
 
       <h2 className="text-2xl font-semibold mb-4">Existing questions</h2>
-      <QuestionsTable questions={questions} onDelete={removeQuestion} />
+      <QuestionsTable
+        questions={questions}
+        onDelete={removeQuestion}
+        onUpdate={updateQuestionSettings}
+      />
     </div>
   )
 }

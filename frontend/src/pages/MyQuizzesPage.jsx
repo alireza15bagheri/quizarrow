@@ -60,11 +60,12 @@ export default function MyQuizzesPage() {
                   <td>{new Date(quiz.created_at).toLocaleString()}</td>
                   <td>
                     <button
-                      className="btn btn-accent btn-sm"
+                      className="btn btn-accent btn-sm text-xl"
                       onClick={() => navigate(`/quizzes/${quiz.id}/edit`)}
                     >
-                      Edit
+                      ...
                     </button>
+
                   </td>
                   <td>
                     <button

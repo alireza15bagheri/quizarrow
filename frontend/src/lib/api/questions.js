@@ -1,4 +1,3 @@
-// frontend/src/lib/api/questions.js
 import { API_BASE, getCookie } from './utils'
 
 export async function addQuizQuestion(quizId, question) {
@@ -30,4 +29,22 @@ export async function deleteQuizQuestion(quizId, questionId) {
     const data = await res.json().catch(() => ({}))
     throw new Error(data.error?.message || data.detail || 'Failed to delete question')
   }
+}
+
+export async function updateQuizQuestion(quizId, questionId, payload) {
+  const csrftoken = getCookie('csrftoken')
+  const res = await fetch(`${API_BASE}/game/quizzes/${quizId}/questions/${questionId}/update/`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrftoken || '',
+    },
+    body: JSON.stringify(payload),
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error?.message || data.detail || 'Failed to update question')
+  }
+  return res.json()
 }

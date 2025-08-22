@@ -1,6 +1,8 @@
 import { useState } from 'react'
 
-export default function QuestionsTable({ questions, onDelete }) {
+export default function QuestionsTable({ questions, onDelete, onUpdate }) {
+  const [editing, setEditing] = useState({})
+  const [savingId, setSavingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
 
   if (!questions || questions.length === 0) {
@@ -8,6 +10,37 @@ export default function QuestionsTable({ questions, onDelete }) {
   }
 
   const sorted = [...questions].sort((a, b) => a.order - b.order)
+
+  const handleChange = (id, field, value) => {
+    setEditing((prev) => ({
+      ...prev,
+      [id]: {
+        ...prev[id],
+        [field]: value,
+      },
+    }))
+  }
+
+  const handleSave = async (id) => {
+    const data = editing[id]
+    if (!data) return
+    setSavingId(id)
+    try {
+      await onUpdate(id, {
+        points: data.points,
+        timer_seconds: data.timer_seconds,
+      })
+      setEditing((prev) => {
+        const next = { ...prev }
+        delete next[id]
+        return next
+      })
+    } catch (err) {
+      alert(err.message || 'Failed to save')
+    } finally {
+      setSavingId(null)
+    }
+  }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this question?')) return
@@ -27,34 +60,72 @@ export default function QuestionsTable({ questions, onDelete }) {
             <th>Order</th>
             <th>Text</th>
             <th>Points</th>
-            <th>Timer</th>
+            <th>Timer (s)</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
-          {sorted.map((q) => (
-            <tr key={q.id}>
-              <td>{q.order}</td>
-              <td className="text-left">
-                {q.question?.text?.length > 120
-                  ? q.question.text.slice(0, 120) + '…'
-                  : q.question?.text || '(no text)'}
-              </td>
-              <td>{q.effective_points}</td>
-              <td>{q.effective_timer}s</td>
-              <td className="text-right">
-                <button
-                  className="btn btn-error btn-xs"
-                  onClick={() => handleDelete(q.id)}
-                  disabled={deletingId === q.id}
-                >
-                  {deletingId === q.id ? 'Deleting…' : 'Delete'}
-                </button>
-              </td>
-            </tr>
-          ))}
+          {sorted.map((q) => {
+            const row = editing[q.id] ?? {}
+            const pointsValue =
+              row.points ?? (q.points ?? q.effective_points ?? '')
+            const timerValue =
+              row.timer_seconds ?? (q.timer_seconds ?? q.effective_timer ?? '')
+
+            return (
+              <tr key={q.id}>
+                <td>{q.order}</td>
+                <td className="text-left">
+                  {q.question?.text?.length > 120
+                    ? q.question.text.slice(0, 120) + '…'
+                    : q.question?.text || '(no text)'}
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="input input-sm input-bordered w-24"
+                    placeholder={String(q.effective_points)}
+                    value={pointsValue}
+                    onChange={(e) => handleChange(q.id, 'points', e.target.value)}
+                  />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    className="input input-sm input-bordered w-24"
+                    placeholder={String(q.effective_timer)}
+                    value={timerValue}
+                    onChange={(e) =>
+                      handleChange(q.id, 'timer_seconds', e.target.value)
+                    }
+                  />
+                </td>
+                <td className="flex gap-2">
+                  <button
+                    className="btn btn-success btn-xs"
+                    onClick={() => handleSave(q.id)}
+                    disabled={savingId === q.id}
+                    title="Save changes"
+                  >
+                    {savingId === q.id ? 'Saving…' : 'Save'}
+                  </button>
+                  <button
+                    className="btn btn-error btn-xs"
+                    onClick={() => handleDelete(q.id)}
+                    disabled={deletingId === q.id}
+                    title="Delete question"
+                  >
+                    {deletingId === q.id ? 'Deleting…' : 'Delete'}
+                  </button>
+                </td>
+              </tr>
+            )
+          })}
         </tbody>
       </table>
+      <p className="text-xs text-base-content/60 mt-2">
+        Tip: Leave a field blank and Save to reset to the question’s default.
+      </p>
     </div>
   )
 }
