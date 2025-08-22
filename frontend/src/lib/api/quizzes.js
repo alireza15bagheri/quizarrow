@@ -36,3 +36,15 @@ export async function deleteQuiz(id) {
   })
   if (!res.ok) throw new Error('Failed to delete quiz')
 }
+
+export async function getQuizDetail(id) {
+  const res = await fetch(`${API_BASE}/game/quizzes/${id}/`, {
+    method: 'GET',
+    credentials: 'include',
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.error?.message || data.detail || 'Failed to fetch quiz details')
+  }
+  return res.json()
+}
