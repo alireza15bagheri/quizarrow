@@ -1,9 +1,9 @@
-export const API_BASE = import.meta.env.VITE_API_BASE || '/api'
+export const API_BASE = import.meta.env.VITE_API_BASE || '/api';
 
 // Read csrftoken from cookie
 export function getCookie(name) {
-  const v = document.cookie.split('; ').find((row) => row.startsWith(name + '='))
-  return v ? decodeURIComponent(v.split('=')[1]) : null
+  const v = document.cookie.split('; ').find((row) => row.startsWith(name + '='));
+  return v ? decodeURIComponent(v.split('=')[1]) : null;
 }
 
 /**
@@ -13,35 +13,33 @@ export function getCookie(name) {
 export async function apiRequest(path, { method = 'GET', body, headers = {} } = {}) {
   const opts = {
     method,
-    headers: {
-      ...headers,
-    },
+    headers: { ...headers },
     credentials: 'include',
-  }
+  };
 
   // Attach CSRF token for unsafe methods
   if (!['GET', 'HEAD', 'OPTIONS'].includes(method.toUpperCase())) {
-    opts.headers['X-CSRFToken'] = getCookie('csrftoken') || ''
+    opts.headers['X-CSRFToken'] = getCookie('csrftoken') || '';
   }
 
   if (body !== undefined) {
-    opts.headers['Content-Type'] = 'application/json'
-    opts.body = JSON.stringify(body)
+    opts.headers['Content-Type'] = 'application/json';
+    opts.body = JSON.stringify(body);
   }
 
-  const res = await fetch(`${API_BASE}${path}`, opts)
-
-  let data
+  const res = await fetch(`${API_BASE}${path}`, opts);
+  let data;
   try {
-    data = await res.json()
+    data = await res.json();
   } catch {
-    data = {}
+    data = {};
   }
 
   if (!res.ok) {
-    const msg = data.error?.message || data.error || data.detail || 'Request failed'
-    throw new Error(msg)
+    // Prioritize error message extraction based on backend json_error structure
+    const msg = data.error?.message || data.error || data.detail || 'Request failed';
+    throw new Error(msg);
   }
 
-  return data
+  return data;
 }
