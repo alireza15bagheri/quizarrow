@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { useEditingState } from './useEditingState'
 
 export default function QuestionsTable({ questions, onDelete, onUpdate }) {
-  const [editing, setEditing] = useState({})
+  const { editing, updateField, clear } = useEditingState()
   const [savingId, setSavingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
 
@@ -10,16 +11,6 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
   }
 
   const sorted = [...questions].sort((a, b) => a.order - b.order)
-
-  const handleChange = (id, field, value) => {
-    setEditing((prev) => ({
-      ...prev,
-      [id]: {
-        ...prev[id],
-        [field]: value,
-      },
-    }))
-  }
 
   const handleSave = async (id) => {
     const data = editing[id]
@@ -30,11 +21,7 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
         points: data.points,
         timer_seconds: data.timer_seconds,
       })
-      setEditing((prev) => {
-        const next = { ...prev }
-        delete next[id]
-        return next
-      })
+      clear(id)
     } catch (err) {
       alert(err.message || 'Failed to save')
     } finally {
@@ -86,7 +73,9 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                     className="input input-sm input-bordered w-24"
                     placeholder={String(q.effective_points)}
                     value={pointsValue}
-                    onChange={(e) => handleChange(q.id, 'points', e.target.value)}
+                    onChange={(e) =>
+                      updateField(q.id, 'points', e.target.value)
+                    }
                   />
                 </td>
                 <td>
@@ -96,7 +85,7 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                     placeholder={String(q.effective_timer)}
                     value={timerValue}
                     onChange={(e) =>
-                      handleChange(q.id, 'timer_seconds', e.target.value)
+                      updateField(q.id, 'timer_seconds', e.target.value)
                     }
                   />
                 </td>
@@ -107,7 +96,7 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                     disabled={savingId === q.id}
                     title="Save changes"
                   >
-                    {savingId === q.id ? 'Saving…' : 'Save'}
+                    {savingId === q.id ? 'Saving' : 'Save'}
                   </button>
                   <button
                     className="btn btn-error btn-xs"
