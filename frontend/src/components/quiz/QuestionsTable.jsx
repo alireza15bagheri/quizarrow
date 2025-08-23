@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useEditingState } from './useEditingState'
 
-export default function QuestionsTable({ questions, onDelete, onUpdate }) {
+export default function QuestionsTable({ questions, onDelete, onUpdate, disableActions = false }) {
   const { editing, updateField, clear } = useEditingState()
   const [savingId, setSavingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
@@ -76,6 +76,7 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                     onChange={(e) =>
                       updateField(q.id, 'points', e.target.value)
                     }
+                    disabled={disableActions}
                   />
                 </td>
                 <td>
@@ -87,13 +88,14 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                     onChange={(e) =>
                       updateField(q.id, 'timer_seconds', e.target.value)
                     }
+                    disabled={disableActions}
                   />
                 </td>
                 <td className="flex gap-2">
                   <button
                     className="btn btn-success btn-xs"
                     onClick={() => handleSave(q.id)}
-                    disabled={savingId === q.id}
+                    disabled={savingId === q.id || disableActions}
                     title="Save changes"
                   >
                     {savingId === q.id ? 'Saving' : 'Save'}
@@ -101,7 +103,7 @@ export default function QuestionsTable({ questions, onDelete, onUpdate }) {
                   <button
                     className="btn btn-error btn-xs"
                     onClick={() => handleDelete(q.id)}
-                    disabled={deletingId === q.id}
+                    disabled={deletingId === q.id || disableActions}
                     title="Delete question"
                   >
                     {deletingId === q.id ? 'Deleting…' : 'Delete'}

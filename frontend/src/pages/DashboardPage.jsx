@@ -15,13 +15,14 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
+        {/* Create quiz card */}
+        <div className="card bg-base-100 shadow-xl flex flex-col justify-between">
+          <div className="card-body flex flex-col">
             <h2 className="card-title">Create quiz</h2>
-            <p>Start building a new quiz to host later.</p>
-            <div className="card-actions justify-end">
+            <p className="mb-4">Start building a new quiz to host later.</p>
+            <div className="flex justify-center mt-auto">
               <button
-                className="btn btn-primary"
+                className="btn btn-primary w-44"
                 onClick={() => navigate('/quizzes/new')}
               >
                 Create quiz
@@ -30,13 +31,14 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
+        {/* My quizzes card */}
+        <div className="card bg-base-100 shadow-xl flex flex-col justify-between">
+          <div className="card-body flex flex-col">
             <h2 className="card-title">My quizzes</h2>
-            <p>Browse and manage your created quizzes.</p>
-            <div className="card-actions justify-end">
+            <p className="mb-4">Browse and manage your created quizzes.</p>
+            <div className="flex justify-center mt-auto">
               <button
-                className="btn btn-secondary"
+                className="btn btn-secondary w-44"
                 onClick={() => navigate('/quizzes/mine')}
               >
                 View quizzes
@@ -45,13 +47,17 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
+        {/* My sessions card */}
+        <div className="card bg-base-100 shadow-xl flex flex-col justify-between md:col-span-2">
+          <div className="card-body flex flex-col">
             <h2 className="card-title">My sessions</h2>
-            <p>View previous games, stats, and leaderboards.</p>
-            <div className="card-actions justify-end">
-              <button className="btn" disabled>
-                Coming soon
+            <p className="mb-4">View and manage your published quizzes.</p>
+            <div className="flex justify-center mt-auto">
+              <button
+                className="btn btn-accent w-44"
+                onClick={() => navigate('/sessions')}
+              >
+                Go to My Sessions
               </button>
             </div>
           </div>

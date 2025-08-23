@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
@@ -48,6 +48,9 @@ class QuizQuestionAddView(generics.CreateAPIView):
         if quiz.host != request.user:
             raise PermissionDenied("You do not have permission to edit this quiz.")
 
+        if quiz.is_published:
+            raise ValidationError("This quiz is published and cannot be modified.")
+
         # Expecting a payload like {"quiz_questions": [ {...}, {...} ]}
         quiz_questions_data = request.data.get("quiz_questions", [])
         if not isinstance(quiz_questions_data, list):
@@ -85,6 +88,17 @@ class MyQuizDetailView(generics.RetrieveUpdateAPIView):
         # Only quizzes created by the logged-in user
         return Quiz.objects.filter(host=self.request.user)
 
+    def update(self, request, *args, **kwargs):
+        quiz = self.get_object()
+        # Only allow editing if not published, except for toggling is_published itself
+        if quiz.is_published:
+            # Only is_published can be changed (allow unpublishing)
+            allowed_fields = {"is_published"}
+            update_fields = set(request.data.keys())
+            if not update_fields.issubset(allowed_fields):
+                raise ValidationError("This quiz is published and cannot be edited.")
+        return super().update(request, *args, **kwargs)
+
 
 class QuizQuestionDeleteView(APIView):
     permission_classes = [permissions.IsAuthenticated]
@@ -96,6 +110,12 @@ class QuizQuestionDeleteView(APIView):
         quiz = get_object_or_404(Quiz, pk=pk)
         if quiz.host != request.user:
             raise PermissionDenied("You do not have permission to edit this quiz.")
+
+        if quiz.is_published:
+            return Response(
+                {"error": "This quiz is published and cannot be modified."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
         quiz_question.delete()
@@ -113,6 +133,12 @@ class QuizQuestionUpdateView(APIView):
         quiz = get_object_or_404(Quiz, pk=pk)
         if quiz.host != request.user:
             raise PermissionDenied("You do not have permission to edit this quiz.")
+
+        if quiz.is_published:
+            return Response(
+                {"error": "This quiz is published and cannot be modified."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
 
         quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
         serializer = QuizQuestionAdminSerializer(quiz_question, data=request.data, partial=True)

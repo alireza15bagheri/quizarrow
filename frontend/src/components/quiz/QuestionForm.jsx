@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function QuestionForm({ onAdd, className = '' }) {
+export default function QuestionForm({ onAdd, className = '', disabled = false }) {
   const [text, setText] = useState('')
   const [choices, setChoices] = useState(['', '', '', ''])
   const [correctIndex, setCorrectIndex] = useState(0)
@@ -17,7 +17,8 @@ export default function QuestionForm({ onAdd, className = '' }) {
     text.trim().length > 0 &&
     choices.every((c) => c.trim().length > 0) &&
     correctIndex >= 0 &&
-    correctIndex < choices.length
+    correctIndex < choices.length &&
+    !disabled
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -46,6 +47,7 @@ export default function QuestionForm({ onAdd, className = '' }) {
           value={text}
           onChange={(e) => setText(e.target.value)}
           required
+          disabled={disabled}
         />
       </div>
 
@@ -57,6 +59,7 @@ export default function QuestionForm({ onAdd, className = '' }) {
             onChange={(e) => onChoiceChange(i, e.target.value)}
             placeholder={`Choice ${i + 1}`}
             required
+            disabled={disabled}
           />
           <input
             type="radio"
@@ -64,6 +67,7 @@ export default function QuestionForm({ onAdd, className = '' }) {
             checked={correctIndex === i}
             onChange={() => setCorrectIndex(i)}
             aria-label={`Mark choice ${i + 1} as correct`}
+            disabled={disabled}
           />
         </div>
       ))}
@@ -74,7 +78,11 @@ export default function QuestionForm({ onAdd, className = '' }) {
         </div>
       )}
 
-      <button type="submit" className="btn btn-primary" disabled={!canSubmit || submitting}>
+      <button
+        type="submit"
+        className="btn btn-primary"
+        disabled={!canSubmit || submitting || disabled}
+      >
         {submitting ? 'Saving…' : 'Save question'}
       </button>
     </form>
