@@ -12,7 +12,7 @@ export async function getMyQuizzes() {
 }
 
 export async function deleteQuiz(id) {
-  return apiRequest(`/game/quizzes/${id}/`, { method: 'DELETE' });
+  return apiRequest(`/game/quizzes/mine/${id}/`, { method: 'DELETE' });
 }
 
 export async function getQuizDetail(id) {
