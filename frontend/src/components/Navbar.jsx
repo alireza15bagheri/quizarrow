@@ -67,6 +67,14 @@ export default function Navbar() {
               My Quizzes
             </Link>
           </li>
+          <li>
+            <Link
+              className={`link ${isActive('/sessions') ? 'link-success font-bold' : ''}`}
+              to="/sessions"
+            >
+              My Sessions
+            </Link>
+          </li>
         </ul>
       </div>
 
@@ -116,6 +124,15 @@ export default function Navbar() {
                   className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
                 >
                   My Quizzes
+                </Link>
+              </li>
+              <li>
+                <Link
+                  to="/sessions"
+                  onClick={closeMobile}
+                  className={`link ${isActive('/sessions') ? 'link-success font-bold' : ''}`}
+                >
+                  My Sessions
                 </Link>
               </li>
             </ul>

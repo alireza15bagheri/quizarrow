@@ -72,10 +72,11 @@ class QuizQuestionAddView(generics.CreateAPIView):
         return Response(serializer.data, status=201)
 
 
-class MyQuizDetailView(generics.RetrieveAPIView):
+class MyQuizDetailView(generics.RetrieveUpdateAPIView):
     """
     Returns the details of a single quiz (with questions)
     for the currently authenticated host.
+    Allows PATCH/PUT to update quiz meta (e.g., is_published) for owner.
     """
     serializer_class = QuizAdminSerializer
     permission_classes = [permissions.IsAuthenticated]

@@ -7,6 +7,7 @@ import AppLayout from './components/AppLayout'
 import CreateQuizPage from './pages/CreateQuizPage'
 import MyQuizzesPage from './pages/MyQuizzesPage'
 import EditQuizQuestionsPage from './pages/EditQuizQuestionsPage'
+import MySessionsPage from './pages/MySessionsPage'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -96,6 +97,16 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <EditQuizQuestionsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/sessions"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <MySessionsPage />
               </AppLayout>
             </ProtectedRoute>
           }
