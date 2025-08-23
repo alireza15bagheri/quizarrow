@@ -60,20 +60,25 @@ export default function MyQuizzesPage() {
                   <td>{new Date(quiz.created_at).toLocaleString()}</td>
                   <td>
                     <button
-                      className="btn btn-accent btn-sm text-xl"
+                      className="btn btn-accent btn-sm"
                       onClick={() => navigate(`/quizzes/${quiz.id}/edit`)}
                     >
-                      ...
+                      Edit
                     </button>
-
                   </td>
                   <td>
-                    <button
-                      className="btn btn-error btn-sm"
-                      onClick={() => onDelete(quiz.id)}
+                    <div
+                      className="tooltip"
+                      data-tip={quiz.is_published ? 'Unpublish To Delete' : ''}
                     >
-                      X
-                    </button>
+                      <button
+                        className="btn btn-error btn-sm"
+                        onClick={() => onDelete(quiz.id)}
+                        disabled={quiz.is_published}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
