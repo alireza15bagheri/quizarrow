@@ -108,16 +108,17 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
     def update(self, request, *args, **kwargs):
         quiz = self.get_object()
         # Only allow editing if not published, except for toggling is_published itself
+        # and updating available_to_date.
         if quiz.is_published:
-            allowed_fields = {"is_published"}
+            allowed_fields = {"is_published", "available_to_date"}
             update_fields = set(request.data.keys())
             if not update_fields.issubset(allowed_fields):
                 raise ValidationError("This quiz is published and cannot be edited.")
 
-        # If transitioning from draft -> published, set publish_date once
+        # If transitioning from draft -> published, always set publish_date to now
         if "is_published" in request.data:
             next_published = bool(request.data.get("is_published"))
-            if next_published and not quiz.is_published and not quiz.publish_date:
+            if next_published and not quiz.is_published:
                 quiz.publish_date = timezone.now()
                 quiz.save(update_fields=["publish_date"])
 

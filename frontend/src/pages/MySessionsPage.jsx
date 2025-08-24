@@ -1,18 +1,32 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getMyQuizzes, updateQuizMeta } from '../lib/api/quizzes'
 import { useNavigate } from 'react-router-dom'
 
-function formatPublishDate(quiz) {
-  // If quiz is published, use updated_at (when published), else empty string
-  // If you want the first publish time, you should store it in DB; for now use updated_at if published
-  if (!quiz.is_published) return ''
-  const date = new Date(quiz.updated_at)
-  // Format: MM-DD HH:mm
-  const mm = String(date.getMonth() + 1).padStart(2, '0')
-  const dd = String(date.getDate()).padStart(2, '0')
-  const hh = String(date.getHours()).padStart(2, '0')
-  const min = String(date.getMinutes()).padStart(2, '0')
-  return `${mm}-${dd} ${hh}:${min}`
+function toInputLocal(dt) {
+  if (!dt) return ''
+  const d = new Date(dt)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const hours = String(d.getHours()).padStart(2, '0')
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  // datetime-local expects YYYY-MM-DDTHH:MM (no seconds)
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+function formatDisplay(dt) {
+  if (!dt) return '—'
+  const d = new Date(dt)
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  let hours = d.getHours()
+  const minutes = String(d.getMinutes()).padStart(2, '0')
+  const ampm = hours >= 12 ? 'PM' : 'AM'
+  hours = hours % 12
+  hours = hours === 0 ? 12 : hours
+  const hoursStr = String(hours).padStart(2, '0')
+  return `${year}-${month}-${day} ${hoursStr}:${minutes} ${ampm}`
 }
 
 export default function MySessionsPage() {
@@ -20,6 +34,7 @@ export default function MySessionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [publishingId, setPublishingId] = useState(null)
+  const [availables, setAvailables] = useState({})
   const navigate = useNavigate()
 
   const fetchData = async () => {
@@ -28,6 +43,12 @@ export default function MySessionsPage() {
     try {
       const data = await getMyQuizzes()
       setQuizzes(data)
+      // Prime input state with existing values (if any)
+      const initial = {}
+      for (const q of data) {
+        initial[q.id] = toInputLocal(q.available_to_date)
+      }
+      setAvailables(initial)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -38,15 +59,37 @@ export default function MySessionsPage() {
   const onTogglePublish = async (quiz) => {
     const nextStatus = !quiz.is_published
     const confirmMsg = nextStatus
-      ? 'Are you sure you want to publish this quiz? Once published, others can see and join it.'
-      : 'Are you sure you want to unpublish this quiz? It will no longer be visible to others.'
+      ? 'Publish this quiz? Once published, it will be visible to others.'
+      : 'Unpublish this quiz? It will no longer be visible to others.'
     if (!window.confirm(confirmMsg)) return
+
     setPublishingId(quiz.id)
     try {
-      await updateQuizMeta(quiz.id, { is_published: nextStatus })
+      const payload = { is_published: nextStatus }
+      // If publishing and a date is provided, include available_to_date
+      if (nextStatus) {
+        const inputVal = availables[quiz.id]
+        if (inputVal && inputVal.trim()) {
+          // Convert local input to ISO string
+          const iso = new Date(inputVal).toISOString()
+          payload.available_to_date = iso
+        }
+      }
+      await updateQuizMeta(quiz.id, payload)
       setQuizzes((prev) =>
         prev.map((q) =>
-          q.id === quiz.id ? { ...q, is_published: nextStatus, updated_at: new Date().toISOString() } : q
+          q.id === quiz.id
+            ? {
+                ...q,
+                is_published: nextStatus,
+                // Update available_to_date locally if we sent it
+                available_to_date:
+                  nextStatus && payload.available_to_date
+                    ? payload.available_to_date
+                    : q.available_to_date,
+                updated_at: new Date().toISOString(),
+              }
+            : q
         )
       )
     } catch (err) {
@@ -67,7 +110,7 @@ export default function MySessionsPage() {
     <div className="max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold mb-4">My Sessions</h1>
       <p className="mb-4 text-base-content/70">
-        Here you can manage your quizzes and publish or unpublish them so others can participate.
+        Manage your quizzes, publish/unpublish them, and set an availability end time.
       </p>
       {quizzes.length === 0 ? (
         <p>You have not created any quizzes yet.</p>
@@ -77,7 +120,7 @@ export default function MySessionsPage() {
             <thead>
               <tr>
                 <th>Title</th>
-                <th>Publish date</th>
+                <th>Available until</th>
                 <th>Status</th>
                 <th colSpan={2}></th>
               </tr>
@@ -88,9 +131,16 @@ export default function MySessionsPage() {
                   <td>{quiz.title}</td>
                   <td>
                     {quiz.is_published ? (
-                      <span>{formatPublishDate(quiz)}</span>
+                      <span>{formatDisplay(quiz.available_to_date)}</span>
                     ) : (
-                      <span className="text-base-content/40 italic">—</span>
+                      <input
+                        type="datetime-local"
+                        className="input input-sm input-bordered"
+                        value={availables[quiz.id] ?? ''}
+                        onChange={(e) =>
+                          setAvailables((prev) => ({ ...prev, [quiz.id]: e.target.value }))
+                        }
+                      />
                     )}
                   </td>
                   <td>

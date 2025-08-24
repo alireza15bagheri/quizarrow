@@ -37,9 +37,10 @@ class QuizAdminSerializer(serializers.ModelSerializer):
         model = Quiz
         fields = [
             "id", "title", "description", "tags", "tag_ids",
-            "is_published", "created_at", "updated_at", "quiz_questions",
+            "is_published", "publish_date", "available_to_date",
+            "created_at", "updated_at", "quiz_questions",
         ]
-        read_only_fields = ["id", "created_at", "updated_at", "tags"]
+        read_only_fields = ["id", "created_at", "updated_at", "tags", "publish_date"]
 
     def create(self, validated_data):
         qlinks = validated_data.pop("quiz_questions", [])
