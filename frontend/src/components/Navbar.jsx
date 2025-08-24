@@ -36,7 +36,8 @@ function Icon({ name, className = 'w-4 h-4' }) {
 
 function NavLinks({ onClick, isActive }) {
   const linkBase =
-    'inline-flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60'
+    // Base (mobile): roomier; md: tighter; lg: roomy again. Prevent label wrapping.
+    'inline-flex items-center gap-2 md:gap-1.5 lg:gap-2 px-4 md:px-3 lg:px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60'
   const activeClasses =
     'bg-gradient-to-r from-secondary to-primary text-base-100 shadow-md'
   const inactiveClasses =
@@ -62,8 +63,8 @@ function NavLinks({ onClick, isActive }) {
             aria-current={active ? 'page' : undefined}
             title={it.label}
           >
-            <Icon name={it.icon} />
-            <span className="text-sm font-semibold">{it.label}</span>
+            <Icon name={it.icon} className="w-4 h-4 md:w-3.5 md:h-3.5 lg:w-4 lg:h-4" />
+            <span className="font-semibold text-sm md:text-xs lg:text-sm">{it.label}</span>
           </Link>
         )
       })}
@@ -114,7 +115,7 @@ export default function Navbar() {
       </div>
 
       {/* Desktop menu */}
-      <nav className="hidden md:flex items-center gap-2">
+      <nav className="hidden md:flex items-center gap-2 md:gap-1.5 lg:gap-2">
         <NavLinks isActive={isActive} />
       </nav>
 
