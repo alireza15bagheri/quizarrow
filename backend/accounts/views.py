@@ -16,13 +16,16 @@ def json_ok(payload: dict | None = None, status: int = 200):
 
 def json_error(message: str, *, code: str = "error", status: int = 400, details: dict | None = None):
     """
-    Error shape: structured 'error' + legacy 'detail'/'error' for compatibility.
+    Error shape: structured 'error' (object) plus legacy string fields.
+    - 'error': object with 'code', 'message', 'details'
+    - 'detail': legacy message string
+    - 'error_legacy': legacy message string for older clients that expected a string in 'error'
     """
     body = {
         "ok": False,
         "error": {"code": code, "message": message, "details": details or {}},
-        "detail": message,  # legacy
-        "error": message,   # legacy (frontend currently checks this)
+        "detail": message,         # legacy message string
+        "error_legacy": message,   # legacy alias; do not overwrite 'error' object
     }
     return JsonResponse(body, status=status)
 

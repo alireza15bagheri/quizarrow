@@ -102,7 +102,7 @@ class APIExceptionMiddleware:
             body = {
                 "ok": False,
                 "error": {"code": "server_error", "message": "Internal server error", "details": {}},
-                "detail": "Internal server error",
-                "error": "Internal server error",
+                "detail": "Internal server error",        # legacy message string
+                "error_legacy": "Internal server error",  # legacy alias; do not overwrite 'error' object
             }
             return JsonResponse(body, status=500)
