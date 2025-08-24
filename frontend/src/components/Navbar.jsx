@@ -2,6 +2,49 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState } from 'react'
 
+function NavLinks({ onClick, isActive }) {
+  return (
+    <>
+      <li>
+        <Link
+          to="/dashboard"
+          onClick={onClick}
+          className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
+        >
+          Dashboard
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/lobby"
+          onClick={onClick}
+          className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
+        >
+          Lobby
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/quizzes/mine"
+          onClick={onClick}
+          className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
+        >
+          My Quizzes
+        </Link>
+      </li>
+      <li>
+        <Link
+          to="/sessions"
+          onClick={onClick}
+          className={`link ${isActive('/sessions') ? 'link-success font-bold' : ''}`}
+        >
+          My Sessions
+        </Link>
+      </li>
+    </>
+  )
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth()
   const location = useLocation()
@@ -43,38 +86,7 @@ export default function Navbar() {
       {/* Desktop menu */}
       <div className="hidden md:flex">
         <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link
-              className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
-              to="/dashboard"
-            >
-              Dashboard
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
-              to="/lobby"
-            >
-              Lobby
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
-              to="/quizzes/mine"
-            >
-              My Quizzes
-            </Link>
-          </li>
-          <li>
-            <Link
-              className={`link ${isActive('/sessions') ? 'link-success font-bold' : ''}`}
-              to="/sessions"
-            >
-              My Sessions
-            </Link>
-          </li>
+          <NavLinks isActive={isActive} />
         </ul>
       </div>
 
@@ -99,42 +111,7 @@ export default function Navbar() {
           />
           <div className="absolute left-2 top-14 z-50 md:hidden">
             <ul className="menu menu-sm bg-base-100 rounded-box w-56 p-2 shadow">
-              <li>
-                <Link
-                  to="/dashboard"
-                  onClick={closeMobile}
-                  className={`link ${isActive('/dashboard') ? 'link-success font-bold' : ''}`}
-                >
-                  Dashboard
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/lobby"
-                  onClick={closeMobile}
-                  className={`link ${isActive('/lobby') ? 'link-success font-bold' : ''}`}
-                >
-                  Lobby
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/quizzes/mine"
-                  onClick={closeMobile}
-                  className={`link ${isActive('/quizzes/mine') ? 'link-success font-bold' : ''}`}
-                >
-                  My Quizzes
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/sessions"
-                  onClick={closeMobile}
-                  className={`link ${isActive('/sessions') ? 'link-success font-bold' : ''}`}
-                >
-                  My Sessions
-                </Link>
-              </li>
+              <NavLinks onClick={closeMobile} isActive={isActive} />
             </ul>
           </div>
         </>
