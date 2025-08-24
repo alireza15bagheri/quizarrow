@@ -62,6 +62,11 @@ class Quiz(models.Model):
     description = models.TextField(blank=True, verbose_name=_("description"))
     tags = models.ManyToManyField(Tag, blank=True, related_name="quizzes", verbose_name=_("tags"))
     is_published = models.BooleanField(default=False)
+
+    # Newly added fields
+    publish_date = models.DateTimeField(null=True, blank=True, verbose_name=_("publish date"))
+    available_to_date = models.DateTimeField(null=True, blank=True, verbose_name=_("available to date"))
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

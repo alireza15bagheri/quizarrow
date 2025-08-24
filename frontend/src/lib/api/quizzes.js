@@ -20,8 +20,12 @@ export async function getQuizDetail(id) {
 }
 
 export async function updateQuizMeta(id, updates) {
-    return apiRequest(`/game/quizzes/${id}/`, {
-        method: 'PATCH',
-        body: updates,
-    });
+  return apiRequest(`/game/quizzes/${id}/`, {
+    method: 'PATCH',
+    body: updates,
+  });
+}
+
+export async function getPublishedQuizzes() {
+  return apiRequest('/game/quizzes/published/', { method: 'GET' });
 }

@@ -1,25 +1,44 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
+import { getPublishedQuizzes } from '../lib/api/quizzes'
 
 export default function LobbyPage() {
   const { user } = useAuth()
 
-  // Placeholders for future integration
-  const [roomName, setRoomName] = useState('')
-  const [joinCode, setJoinCode] = useState('')
-  const [message, setMessage] = useState(null)
+  const [publishedQuizzes, setPublishedQuizzes] = useState([])
+  const [loadingQuizzes, setLoadingQuizzes] = useState(true)
+  const [quizzesError, setQuizzesError] = useState(null)
 
-  const onCreate = (e) => {
-    e.preventDefault()
-    // Later: POST /api/lobbies/ to create a room, then navigate to /lobby/:code and open WS
-    setMessage('Creating lobbies will be available soon.')
-  }
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      try {
+        const data = await getPublishedQuizzes()
+        if (mounted) setPublishedQuizzes(Array.isArray(data) ? data : [])
+      } catch (err) {
+        if (mounted) setQuizzesError(err.message || 'Failed to load quizzes')
+      } finally {
+        if (mounted) setLoadingQuizzes(false)
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
-  const onJoin = (e) => {
-    e.preventDefault()
-    if (!joinCode.trim()) return
-    // Later: validate code via /api/lobbies/:code, then navigate and open WS
-    setMessage(`Joining lobby "${joinCode.trim().toUpperCase()}" coming soon.`)
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '—'
+    const date = new Date(dateStr)
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    let hours = date.getHours()
+    const minutes = String(date.getMinutes()).padStart(2, '0')
+    const ampm = hours >= 12 ? 'PM' : 'AM'
+    hours = hours % 12
+    hours = hours === 0 ? 12 : hours
+    const hoursStr = String(hours).padStart(2, '0')
+    return `${year}-${month}-${day} ${hoursStr}:${minutes} ${ampm}`
   }
 
   return (
@@ -31,85 +50,36 @@ export default function LobbyPage() {
         </p>
       </div>
 
-      {message && (
-        <div className="alert alert-info mb-4">
-          <span>{message}</span>
-        </div>
-      )}
-
-      <div className="grid gap-4 md:grid-cols-2">
-        {/* Create lobby */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Create a lobby</h2>
-            <p className="text-sm text-base-content/70">
-              Host a room and share the code with players.
-            </p>
-            <form onSubmit={onCreate} className="space-y-3 mt-2">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Lobby name</span>
-                </label>
-                <input
-                  className="input input-bordered"
-                  value={roomName}
-                  onChange={(e) => setRoomName(e.target.value)}
-                  placeholder="e.g., Friday Night Trivia"
-                />
-              </div>
-              <div className="form-control">
-                <label className="label cursor-pointer">
-                  <span className="label-text">Private lobby</span>
-                  <input type="checkbox" className="toggle" defaultChecked />
-                </label>
-              </div>
-              <button type="submit" className="btn btn-primary w-full" disabled>
-                Coming soon
-              </button>
-            </form>
+      <div className="mt-8">
+        <h2 className="text-2xl font-semibold mb-4">Available Quizzes</h2>
+        {loadingQuizzes && <p>Loading quizzes…</p>}
+        {quizzesError && (
+          <div className="alert alert-error mb-4">
+            <span>{quizzesError}</span>
           </div>
-        </div>
-
-        {/* Join lobby */}
-        <div className="card bg-base-100 shadow-xl">
-          <div className="card-body">
-            <h2 className="card-title">Join a lobby</h2>
-            <p className="text-sm text-base-content/70">
-              Enter the code shared by your host.
-            </p>
-            <form onSubmit={onJoin} className="space-y-3 mt-2">
-              <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Lobby code</span>
-                </label>
-                <input
-                  className="input input-bordered uppercase tracking-widest"
-                  value={joinCode}
-                  onChange={(e) => setJoinCode(e.target.value)}
-                  placeholder="ABCD1234"
-                />
+        )}
+        {!loadingQuizzes && !quizzesError && publishedQuizzes.length === 0 && (
+          <p>No quizzes are currently published.</p>
+        )}
+        <div className="grid gap-4">
+          {publishedQuizzes.map((quiz) => (
+            <div key={quiz.id} className="card bg-base-100 shadow">
+              <div className="card-body">
+                <h3 className="card-title">{quiz.title}</h3>
+                {quiz.description && (
+                  <p className="text-sm text-base-content/70 mb-2">{quiz.description}</p>
+                )}
+                <div className="text-sm text-base-content/60 space-y-1 mb-3">
+                  <p><strong>Publisher:</strong> {quiz.publisher_username || 'Unknown'}</p>
+                  <p><strong>Publish date:</strong> {formatDate(quiz.publish_date)}</p>
+                  <p><strong>Available until:</strong> {formatDate(quiz.available_to_date)}</p>
+                </div>
+                <button className="btn btn-primary">
+                  Take Quiz
+                </button>
               </div>
-              <button type="submit" className="btn w-full" disabled={!joinCode.trim()}>
-                Join (placeholder)
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Future presence area */}
-      <div className="card bg-base-100 shadow mt-6">
-        <div className="card-body">
-          <h3 className="card-title">Players</h3>
-          <p className="text-sm text-base-content/70">
-            Once connected, you’ll see joined players here in real-time.
-          </p>
-          <div className="mt-2 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-            <div className="skeleton h-10"></div>
-            <div className="skeleton h-10"></div>
-            <div className="skeleton h-10"></div>
-            <div className="skeleton h-10"></div>
-          </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

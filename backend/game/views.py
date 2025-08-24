@@ -1,3 +1,5 @@
+from django.db.models import F
+from django.utils import timezone
 from rest_framework import generics, permissions
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -111,6 +113,14 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
             update_fields = set(request.data.keys())
             if not update_fields.issubset(allowed_fields):
                 raise ValidationError("This quiz is published and cannot be edited.")
+
+        # If transitioning from draft -> published, set publish_date once
+        if "is_published" in request.data:
+            next_published = bool(request.data.get("is_published"))
+            if next_published and not quiz.is_published and not quiz.publish_date:
+                quiz.publish_date = timezone.now()
+                quiz.save(update_fields=["publish_date"])
+
         return super().update(request, *args, **kwargs)
 
 
@@ -141,3 +151,27 @@ class QuizQuestionUpdateView(QuizEditPermissionMixin, APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+class PublishedQuizzesListView(APIView):
+    """
+    Public endpoint to list all published quizzes with publisher info and dates.
+    """
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        qs = (
+            Quiz.objects.filter(is_published=True)
+            .select_related("host")
+            .annotate(publisher_username=F("host__username"))
+            .values(
+                "id",
+                "title",
+                "description",
+                "is_published",
+                "publisher_username",
+                "publish_date",
+                "available_to_date",
+            )
+        )
+        return Response(list(qs), status=status.HTTP_200_OK)

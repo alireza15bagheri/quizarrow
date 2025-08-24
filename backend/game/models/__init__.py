@@ -7,6 +7,7 @@ after splitting models into domain-specific modules.
 from .questions import Tag, Question, Quiz, QuizQuestion
 from .lobby import LobbyRoom, LobbyBan, LobbyParticipant
 from .answers import Answer
+from .events import GameEvent
 
 __all__ = [
     # Question bank
@@ -20,4 +21,6 @@ __all__ = [
     "LobbyParticipant",
     # Answers & scoring
     "Answer",
+    # Event log
+    "GameEvent",
 ]
