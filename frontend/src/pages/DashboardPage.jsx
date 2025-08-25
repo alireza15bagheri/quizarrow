@@ -10,7 +10,7 @@ export default function DashboardPage() {
       <div className="text-center mb-6">
         <h1 className="text-3xl font-bold">Quizarrow Dashboard</h1>
         <p className="text-base-content/70 mt-1">
-          Welcome back, <span className="font-semibold">{user?.username}</span>
+           Welcome back, <span className="font-semibold">{user?.username}</span>
         </p>
       </div>
 
@@ -48,7 +48,7 @@ export default function DashboardPage() {
         </div>
 
         {/* My sessions card */}
-        <div className="card bg-base-100 shadow-xl flex flex-col justify-between md:col-span-2">
+        <div className="card bg-base-100 shadow-xl flex flex-col justify-between">
           <div className="card-body flex flex-col">
             <h2 className="card-title">My sessions</h2>
             <p className="mb-4">View and manage your published quizzes.</p>
@@ -58,6 +58,22 @@ export default function DashboardPage() {
                 onClick={() => navigate('/sessions')}
               >
                 Go to My Sessions
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        {/* Participation History card */}
+        <div className="card bg-base-100 shadow-xl flex flex-col justify-between">
+          <div className="card-body flex flex-col">
+            <h2 className="card-title">Participation History</h2>
+            <p className="mb-4">Review your scores from past quizzes.</p>
+            <div className="flex justify-center mt-auto">
+              <button
+                className="btn btn-info w-44"
+                onClick={() => navigate('/history')}
+              >
+                View History
               </button>
             </div>
           </div>

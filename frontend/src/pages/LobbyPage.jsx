@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { getPublishedQuizzes } from '../lib/api/quizzes'
+import { joinLobby } from '../lib/api/game'
+import { useNavigate } from 'react-router-dom'
 
 function Icon({ name, className = 'w-4 h-4' }) {
   switch (name) {
@@ -29,10 +31,13 @@ function Icon({ name, className = 'w-4 h-4' }) {
 
 export default function LobbyPage() {
   const { user } = useAuth()
+  const navigate = useNavigate()
 
   const [publishedQuizzes, setPublishedQuizzes] = useState([])
   const [loadingQuizzes, setLoadingQuizzes] = useState(true)
   const [quizzesError, setQuizzesError] = useState(null)
+  const [joiningId, setJoiningId] = useState(null)
+
 
   useEffect(() => {
     let mounted = true
@@ -50,6 +55,18 @@ export default function LobbyPage() {
       mounted = false
     }
   }, [])
+
+  const handleTakeQuiz = async (quizId) => {
+    setJoiningId(quizId)
+    try {
+      const { lobby_id } = await joinLobby(quizId)
+      navigate(`/quiz/take/${lobby_id}`)
+    } catch (err) {
+      setQuizzesError(err.message || 'Could not start quiz session.')
+    } finally {
+      setJoiningId(null)
+    }
+  }
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '—'
@@ -138,8 +155,12 @@ export default function LobbyPage() {
 
                 {/* CTA */}
                 <div className="mt-3 flex justify-end">
-                  <button className="btn btn-primary">
-                    Take Quiz
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => handleTakeQuiz(quiz.id)}
+                    disabled={joiningId === quiz.id}
+                  >
+                    {joiningId === quiz.id ? 'Starting…' : 'Take Quiz'}
                   </button>
                 </div>
               </div>

@@ -13,6 +13,7 @@ from .quizzes import (
 )
 from .lobby import LobbySerializer, LobbyParticipantSerializer
 from .answers import AnswerSerializer, AnswerSubmitSerializer
+from .participation import QuizParticipationSerializer
 
 __all__ = [
     # tags
@@ -31,4 +32,6 @@ __all__ = [
     # answers
     "AnswerSerializer",
     "AnswerSubmitSerializer",
+    # history
+    "QuizParticipationSerializer",
 ]

@@ -8,6 +8,7 @@ from .questions import Tag, Question, Quiz, QuizQuestion
 from .lobby import LobbyRoom, LobbyBan, LobbyParticipant
 from .answers import Answer
 from .events import GameEvent
+from .participation import QuizParticipation
 
 __all__ = [
     # Question bank
@@ -23,4 +24,6 @@ __all__ = [
     "Answer",
     # Event log
     "GameEvent",
+    # History
+    "QuizParticipation",
 ]

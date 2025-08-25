@@ -29,6 +29,12 @@ function Icon({ name, className = 'w-4 h-4' }) {
           <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H5V9h14v9z" />
         </svg>
       )
+    case 'history':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"/>
+        </svg>
+      )
     default:
       return null
   }
@@ -47,6 +53,7 @@ function NavLinks({ onClick, isActive }) {
     { to: '/lobby', label: 'Lobby', icon: 'lobby' },
     { to: '/quizzes/mine', label: 'My Quizzes', icon: 'quizzes' },
     { to: '/sessions', label: 'My Sessions', icon: 'sessions' },
+    { to: '/history', label: 'History', icon: 'history' },
   ]
 
   return (

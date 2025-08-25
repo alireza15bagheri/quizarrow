@@ -7,8 +7,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.views import APIView
 
-from .models import Quiz, QuizQuestion, Question
-from .serializers import QuizAdminSerializer, QuizQuestionAdminSerializer
+from .models import Quiz, QuizQuestion, Question, QuizParticipation
+from .serializers import (
+    QuizAdminSerializer, QuizQuestionAdminSerializer, QuizQuestionPublicSerializer,
+    QuizParticipationSerializer
+)
+from .services import GameService
 
 
 class QuizEditPermissionMixin:
@@ -176,3 +180,72 @@ class PublishedQuizzesListView(APIView):
             )
         )
         return Response(list(qs), status=status.HTTP_200_OK)
+
+
+# --- Gameplay Views ---
+
+class JoinLobbyView(APIView):
+    """
+    Starts a new solo quiz session for the logged-in user.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, quiz_id):
+        service = GameService()
+        lobby = service.start_solo_quiz(quiz_id=quiz_id, user=request.user)
+        return Response({"lobby_id": lobby.id}, status=status.HTTP_201_CREATED)
+
+
+class LobbyStateView(APIView):
+    """
+    Gets the current state of a game lobby (e.g., current question, time left).
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, lobby_id):
+        service = GameService()
+        state = service.get_lobby_state(lobby_id=lobby_id, user=request.user)
+        
+        # Serialize the question part of the state if it exists
+        if state.get("question"):
+            serializer = QuizQuestionPublicSerializer(state["question"])
+            state["question"] = serializer.data
+
+        return Response(state)
+
+
+class SubmitAnswerView(APIView):
+    """
+    Submits an answer for the current question in a lobby.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, lobby_id):
+        service = GameService()
+        result = service.submit_answer(
+            lobby_id=lobby_id, user=request.user, payload=request.data
+        )
+        return Response(result, status=status.HTTP_200_OK)
+
+
+# --- History Views ---
+
+class MyParticipationsListView(generics.ListAPIView):
+    """
+    Lists the quiz participation history for the current user.
+    """
+    serializer_class = QuizParticipationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return QuizParticipation.objects.filter(user=self.request.user).select_related("quiz")
+
+class QuizParticipationDetailView(generics.RetrieveAPIView):
+    """
+    Retrieves a single participation record.
+    """
+    serializer_class = QuizParticipationSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return QuizParticipation.objects.filter(user=self.request.user)

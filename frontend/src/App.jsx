@@ -8,6 +8,9 @@ import CreateQuizPage from './pages/CreateQuizPage'
 import MyQuizzesPage from './pages/MyQuizzesPage'
 import EditQuizQuestionsPage from './pages/EditQuizQuestionsPage'
 import MySessionsPage from './pages/MySessionsPage'
+import QuizTakingPage from './pages/QuizTakingPage'
+import ParticipationHistoryPage from './pages/ParticipationHistoryPage'
+import QuizResultPage from './pages/QuizResultPage'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -107,6 +110,34 @@ export default function App() {
             <ProtectedRoute>
               <AppLayout>
                 <MySessionsPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/take/:lobbyId"
+          element={
+            <ProtectedRoute>
+              <QuizTakingPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <ParticipationHistoryPage />
+              </AppLayout>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/results/:participationId"
+          element={
+            <ProtectedRoute>
+              <AppLayout>
+                <QuizResultPage />
               </AppLayout>
             </ProtectedRoute>
           }
