@@ -58,6 +58,13 @@ export default function MySessionsPage() {
 
   const onTogglePublish = async (quiz) => {
     const nextStatus = !quiz.is_published
+
+    // Prevent publishing a quiz with no questions
+    if (nextStatus && (!quiz.quiz_questions || quiz.quiz_questions.length === 0)) {
+      alert('Cannot publish a quiz with no questions. Please add questions first.')
+      return
+    }
+
     const confirmMsg = nextStatus
       ? 'Publish this quiz? Once published, it will be visible to others.'
       : 'Unpublish this quiz? It will no longer be visible to others.'

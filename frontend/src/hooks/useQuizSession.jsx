@@ -35,12 +35,15 @@ export default function useQuizSession(lobbyId) {
       return
     }
     const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1)
+      setTimeLeft((prev) => Math.max(0, prev - 1))
     }, 1000)
     return () => clearInterval(timer)
   }, [gameState, timeLeft])
 
-  const handleAnswerSubmit = async (choiceIndex) => {
+  const handleAnswerSubmit = useCallback(async (choiceIndex) => {
+    // Guard against concurrent submissions from user clicks and timer hook
+    if (submitting) return;
+
     setSubmitting(true)
     setError(null)
     try {
@@ -56,7 +59,22 @@ export default function useQuizSession(lobbyId) {
     } finally {
       setSubmitting(false)
     }
-  }
+  }, [lobbyId, navigate, fetchState, submitting])
+
+  // Automatically submit when time runs out
+  useEffect(() => {
+    // If time runs out on an active question and we aren't already submitting
+    if (
+      timeLeft <= 0 &&
+      gameState?.status === 'running' &&
+      gameState?.question && // Ensure there is an active question
+      !submitting
+    ) {
+      // Submit a "timeout" answer automatically.
+      // The backend handles late submissions as incorrect.
+      handleAnswerSubmit(null)
+    }
+  }, [timeLeft, gameState, submitting, handleAnswerSubmit])
 
   return {
     loading,

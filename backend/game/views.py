@@ -49,7 +49,7 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
 
     def get_queryset(self):
         # Only quizzes created by this user
-        return Quiz.objects.filter(host=self.request.user)
+        return Quiz.objects.filter(host=self.request.user).prefetch_related("quiz_questions")
 
     def delete(self, request, *args, **kwargs):
         """
@@ -119,10 +119,14 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
             if not update_fields.issubset(allowed_fields):
                 raise ValidationError("This quiz is published and cannot be edited.")
 
-        # If transitioning from draft -> published, always set publish_date to now
+        # If transitioning from draft -> published, check for questions and set publish_date
         if "is_published" in request.data:
             next_published = bool(request.data.get("is_published"))
             if next_published and not quiz.is_published:
+                # Prevent publishing a quiz with no questions
+                if not quiz.quiz_questions.exists():
+                    raise ValidationError("A quiz must have at least one question to be published.")
+                
                 quiz.publish_date = timezone.now()
                 quiz.save(update_fields=["publish_date"])
 
