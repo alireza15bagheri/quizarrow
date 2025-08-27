@@ -38,7 +38,6 @@ export default function LobbyPage() {
   const [quizzesError, setQuizzesError] = useState(null)
   const [joiningId, setJoiningId] = useState(null)
 
-
   useEffect(() => {
     let mounted = true
     ;(async () => {
@@ -136,6 +135,10 @@ export default function LobbyPage() {
 
                 {/* Info chips */}
                 <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-base-200 text-xs text-base-content/80">
+                    <span className="font-medium">ID</span>
+                    <span className="font-semibold">#{quiz.id}</span>
+                  </div>
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-base-200 text-xs text-base-content/80">
                     <Icon name="user" />
                     <span className="font-medium">by</span>
