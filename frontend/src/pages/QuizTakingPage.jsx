@@ -1,12 +1,12 @@
 import { useParams } from 'react-router-dom'
 import useQuizSession from '../hooks/useQuizSession'
 
-function Timer({ seconds }) {
+function Timer({ seconds, duration }) {
   const size = 80
   const strokeWidth = 8
   const radius = (size - strokeWidth) / 2
   const circumference = 2 * Math.PI * radius
-  const progress = (seconds / 20) * 100 // Assuming max 20s for visual, can be dynamic
+  const progress = duration > 0 ? (seconds / duration) * 100 : 0
   const offset = circumference - (progress / 100) * circumference
 
   return (
@@ -64,6 +64,7 @@ export default function QuizTakingPage() {
 
   const question = gameState?.question?.question
   const choices = question?.content?.choices || []
+  const duration = gameState?.question?.effective_timer || 20
 
   return (
     <div className="min-h-screen bg-base-200 flex flex-col items-center p-4 sm:p-6 md:p-8 gap-4 sm:gap-6">
@@ -71,7 +72,7 @@ export default function QuizTakingPage() {
         <h1 className="font-bold text-xl">{gameState?.quiz_title}</h1>
         <div className="flex items-center gap-4">
           <div className="font-semibold">Score: <span className="text-primary">{gameState?.score}</span></div>
-          <Timer seconds={timeLeft} />
+          <Timer seconds={timeLeft} duration={duration} />
         </div>
       </header>
 
@@ -81,7 +82,7 @@ export default function QuizTakingPage() {
             <h2 className="card-title text-2xl mb-6 text-center mx-auto">
               {question?.text || 'Waiting for question...'}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               {choices.map((choice, i) => (
                 <button
                   key={i}
