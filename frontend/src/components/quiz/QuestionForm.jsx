@@ -1,11 +1,12 @@
 import { useState } from 'react'
+import { useNotifier } from '../../context/NotificationContext'
 
 export default function QuestionForm({ onAdd, className = '', disabled = false }) {
   const [text, setText] = useState('')
   const [choices, setChoices] = useState(['', '', '', ''])
   const [correctIndex, setCorrectIndex] = useState(0)
   const [submitting, setSubmitting] = useState(false)
-  const [localError, setLocalError] = useState(null)
+  const { notify } = useNotifier()
 
   const onChoiceChange = (i, value) => {
     const next = [...choices]
@@ -24,15 +25,15 @@ export default function QuestionForm({ onAdd, className = '', disabled = false }
     e.preventDefault()
     if (!canSubmit || submitting) return
     setSubmitting(true)
-    setLocalError(null)
     try {
       await onAdd(text.trim(), choices.map((c) => c.trim()), correctIndex)
+      notify.success('Question added successfully!')
       // reset form
       setText('')
       setChoices(['', '', '', ''])
       setCorrectIndex(0)
     } catch (err) {
-      setLocalError(err.message || 'Failed to add question')
+      notify.error(err.message || 'Failed to add question')
     } finally {
       setSubmitting(false)
     }
@@ -71,12 +72,6 @@ export default function QuestionForm({ onAdd, className = '', disabled = false }
           />
         </div>
       ))}
-
-      {localError && (
-        <div className="alert alert-error">
-          <span>{localError}</span>
-        </div>
-      )}
 
       <button
         type="submit"

@@ -1,8 +1,12 @@
 import { useState } from 'react'
 import { useEditingState } from './useEditingState'
+import { useNotifier } from '../../context/NotificationContext'
+import { useConfirm } from '../../context/ConfirmationContext'
 
 export default function QuestionsTable({ questions, onDelete, onUpdate, disableActions = false }) {
   const { editing, updateField, clear } = useEditingState()
+  const { notify } = useNotifier()
+  const { confirmAction } = useConfirm()
   const [savingId, setSavingId] = useState(null)
   const [deletingId, setDeletingId] = useState(null)
 
@@ -22,18 +26,29 @@ export default function QuestionsTable({ questions, onDelete, onUpdate, disableA
         timer_seconds: data.timer_seconds,
       })
       clear(id)
+      notify.success('Question settings updated!')
     } catch (err) {
-      alert(err.message || 'Failed to save')
+      notify.error(err.message || 'Failed to save')
     } finally {
       setSavingId(null)
     }
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this question?')) return
+    const confirmed = await confirmAction({
+      title: 'Delete Question?',
+      message: 'Are you sure you want to remove this question from the quiz?',
+      confirmText: 'Delete',
+      confirmButtonClass: 'btn-error',
+    })
+    if (!confirmed) return
+
     setDeletingId(id)
     try {
       await onDelete(id)
+      notify.success('Question removed from quiz.')
+    } catch (err) {
+      notify.error(err.message || 'Failed to delete question.')
     } finally {
       setDeletingId(null)
     }

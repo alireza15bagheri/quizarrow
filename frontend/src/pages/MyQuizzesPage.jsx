@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react'
 import { getMyQuizzes, deleteQuiz } from '../lib/api/quizzes'
 import { useNavigate } from 'react-router-dom'
+import { useNotifier } from '../context/NotificationContext'
+import { useConfirm } from '../context/ConfirmationContext'
 
 export default function MyQuizzesPage() {
   const [quizzes, setQuizzes] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
+  const { notify } = useNotifier()
+  const { confirmAction } = useConfirm()
 
   const fetchData = async () => {
     setLoading(true)
@@ -22,12 +26,20 @@ export default function MyQuizzesPage() {
   }
 
   const onDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this quiz?')) return
+    const confirmed = await confirmAction({
+      title: 'Delete Quiz?',
+      message: 'Are you sure you want to permanently delete this quiz? This action cannot be undone.',
+      confirmText: 'Delete Quiz',
+      confirmButtonClass: 'btn-error',
+    })
+    if (!confirmed) return
+
     try {
       await deleteQuiz(id)
-      setQuizzes(quizzes.filter(q => q.id !== id))
+      setQuizzes(quizzes.filter((q) => q.id !== id))
+      notify.success('Quiz deleted successfully.')
     } catch (err) {
-      alert(err.message)
+      notify.error(err.message)
     }
   }
 

@@ -11,6 +11,8 @@ import MySessionsPage from './pages/MySessionsPage'
 import QuizTakingPage from './pages/QuizTakingPage'
 import ParticipationHistoryPage from './pages/ParticipationHistoryPage'
 import QuizResultPage from './pages/QuizResultPage'
+import { NotificationProvider } from './context/NotificationContext'
+import { ConfirmationProvider } from './context/ConfirmationContext'
 
 function ProtectedRoute({ children }) {
   const { user, loading } = useAuth()
@@ -45,105 +47,109 @@ function RedirectIfAuthed({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <Routes>
-        <Route
-          path="/login"
-          element={
-            <RedirectIfAuthed>
-              <LoginPage />
-            </RedirectIfAuthed>
-          }
-        />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <DashboardPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/lobby"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <LobbyPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quizzes/new"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <CreateQuizPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quizzes/mine"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <MyQuizzesPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quizzes/:id/edit"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <EditQuizQuestionsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/sessions"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <MySessionsPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quiz/take/:lobbyId"
-          element={
-            <ProtectedRoute>
-              <QuizTakingPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/history"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <ParticipationHistoryPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/quiz/results/:participationId"
-          element={
-            <ProtectedRoute>
-              <AppLayout>
-                <QuizResultPage />
-              </AppLayout>
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
+      <NotificationProvider>
+        <ConfirmationProvider>
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <RedirectIfAuthed>
+                  <LoginPage />
+                </RedirectIfAuthed>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <DashboardPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lobby"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <LobbyPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizzes/new"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <CreateQuizPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizzes/mine"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <MyQuizzesPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quizzes/:id/edit"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <EditQuizQuestionsPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sessions"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <MySessionsPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quiz/take/:lobbyId"
+              element={
+                <ProtectedRoute>
+                  <QuizTakingPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <ParticipationHistoryPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/quiz/results/:participationId"
+              element={
+                <ProtectedRoute>
+                  <AppLayout>
+                    <QuizResultPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
+        </ConfirmationProvider>
+      </NotificationProvider>
     </AuthProvider>
   )
 }

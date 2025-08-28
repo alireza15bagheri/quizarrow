@@ -1,6 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { getMyQuizzes, updateQuizMeta } from '../lib/api/quizzes'
 import { useNavigate } from 'react-router-dom'
+import { useNotifier } from '../context/NotificationContext'
+import { useConfirm } from '../context/ConfirmationContext'
 
 function toInputLocal(dt) {
   if (!dt) return ''
@@ -36,6 +38,8 @@ export default function MySessionsPage() {
   const [publishingId, setPublishingId] = useState(null)
   const [availables, setAvailables] = useState({})
   const navigate = useNavigate()
+  const { notify } = useNotifier()
+  const { confirmAction } = useConfirm()
 
   const fetchData = async () => {
     setLoading(true)
@@ -61,14 +65,22 @@ export default function MySessionsPage() {
 
     // Prevent publishing a quiz with no questions
     if (nextStatus && (!quiz.quiz_questions || quiz.quiz_questions.length === 0)) {
-      alert('Cannot publish a quiz with no questions. Please add questions first.')
+      notify.error('Cannot publish a quiz with no questions. Please add questions first.')
       return
     }
 
     const confirmMsg = nextStatus
-      ? 'Publish this quiz? Once published, it will be visible to others.'
-      : 'Unpublish this quiz? It will no longer be visible to others.'
-    if (!window.confirm(confirmMsg)) return
+      ? 'Once published, this quiz will be visible in the lobby for others to take.'
+      : 'Unpublishing this quiz will remove it from the lobby.'
+
+    const confirmed = await confirmAction({
+      title: nextStatus ? `Publish "${quiz.title}"?` : `Unpublish "${quiz.title}"?`,
+      message: confirmMsg,
+      confirmText: nextStatus ? 'Publish' : 'Unpublish',
+      confirmButtonClass: nextStatus ? 'btn-primary' : 'btn-warning',
+    })
+
+    if (!confirmed) return
 
     setPublishingId(quiz.id)
     try {
@@ -99,8 +111,11 @@ export default function MySessionsPage() {
             : q
         )
       )
+      notify.success(
+        nextStatus ? `Quiz "${quiz.title}" published!` : `Quiz "${quiz.title}" unpublished.`
+      )
     } catch (err) {
-      alert(err.message)
+      notify.error(err.message)
     } finally {
       setPublishingId(null)
     }
@@ -167,13 +182,19 @@ export default function MySessionsPage() {
                   </td>
                   <td>
                     <button
-                      className={`btn btn-sm ${quiz.is_published ? 'btn-warning' : 'btn-primary'}`}
+                      className={`btn btn-sm ${
+                        quiz.is_published ? 'btn-warning' : 'btn-primary'
+                      }`}
                       onClick={() => onTogglePublish(quiz)}
                       disabled={publishingId === quiz.id}
                     >
                       {publishingId === quiz.id
-                        ? (quiz.is_published ? 'Unpublishing…' : 'Publishing…')
-                        : (quiz.is_published ? 'Unpublish' : 'Publish')}
+                        ? quiz.is_published
+                          ? 'Unpublishing…'
+                          : 'Publishing…'
+                        : quiz.is_published
+                          ? 'Unpublish'
+                          : 'Publish'}
                     </button>
                   </td>
                 </tr>
