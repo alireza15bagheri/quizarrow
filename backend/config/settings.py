@@ -137,9 +137,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JS to read it
-CSRF_COOKIE_SECURE = not DEBUG # Use True in production
+CSRF_COOKIE_SECURE = False # Use True in production
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = not DEBUG # Use True in production
+SESSION_COOKIE_SECURE = False # Use True in production
 SESSION_COOKIE_NAME = 'quizarrow_sessionid'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
