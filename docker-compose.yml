@@ -1,0 +1,94 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME:-quizarrow}
+      POSTGRES_USER: ${DB_USER:-quizarrow}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-quizarrow}
+    volumes:
+      - db_data_dev:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      # Django
+      DEBUG: "1"
+      SECRET_KEY: ${SECRET_KEY:-dev-insecure-secret}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-*}
+      # Database (Django expects these DB_* names)
+      DB_NAME: ${DB_NAME:-quizarrow}
+      DB_USER: ${DB_USER:-quizarrow}
+      DB_PASSWORD: ${DB_PASSWORD:-quizarrow}
+      DB_HOST: db
+      DB_PORT: "5432"
+      # CORS/CSRF for local dev (settings already include localhost defaults)
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      # Entry behavior
+      DJANGO_COLLECTSTATIC: "0"
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - static_dev:/app/staticfiles
+      - media_dev:/app/media
+    command: sh -c "python manage.py runserver 0.0.0.0:8000"
+    ports:
+      - "8000:8000"
+    develop:
+      watch:
+        - path: backend/requirements.txt
+          action: rebuild
+        - path: backend/Dockerfile
+          action: rebuild
+        - path: backend
+          action: sync
+          target: /app
+          ignore:
+            - __pycache__/
+            - "*.pyc"
+            - "staticfiles/"
+            - "media/"
+
+  frontend:
+    image: node:20-alpine
+    working_dir: /app
+    restart: unless-stopped
+    environment:
+      VITE_API_BASE: ${VITE_API_BASE:-/api}
+      # Important: make Vite proxy target resolve the backend container, not localhost
+      VITE_PROXY_TARGET: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - node_modules_dev:/app/node_modules
+    command: sh -c "npm ci && npm run dev -- --host --port 5173"
+    ports:
+      - "5173:5173"
+    develop:
+      watch:
+        - path: frontend/package.json
+          action: sync
+          target: /app/package.json
+        - path: frontend/package-lock.json
+          action: sync
+          target: /app/package-lock.json
+        - path: frontend
+          action: sync
+          target: /app
+          ignore:
+            - "dist/"
+            - "node_modules/"
+
+volumes:
+  db_data_dev:
+  static_dev:
+  media_dev:
+  node_modules_dev:

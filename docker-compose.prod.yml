@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env.prod
+    environment:
+      DB_HOST: db
+      DB_PORT: "5432"
+      DEBUG: "0"
+      DJANGO_COLLECTSTATIC: "1"
+      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
+      # --- ADDED FOR PROXY SUPPORT ---
+      USE_X_FORWARDED_HOST: "1"
+      SECURE_PROXY_SSL_HEADER: "HTTP_X_FORWARDED_PROTO,https"
+    depends_on:
+      - db
+    volumes:
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    expose:
+      - "8000"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: docker/nginx/Dockerfile
+      args:
+        VITE_API_BASE: ${VITE_API_BASE:-/api}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      # - "443:443" # configure TLS if needed
+    depends_on:
+      - backend
+    volumes:
+      - static_volume:/var/www/static:ro
+      - media_volume:/var/www/media:ro
+
+volumes:
+  db_data:
+  static_volume:
+  media_volume:

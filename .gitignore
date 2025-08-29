@@ -9,6 +9,7 @@ media/
 staticfiles/
 backend/.env
 
+
 # React/Vite project
 node_modules/
 dist/
@@ -25,3 +26,5 @@ dist/
 Thumbs.db
 TODO.txt
 development-plan.html
+.env.dev
+.env.prod

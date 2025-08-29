@@ -1,13 +1,14 @@
 @import "tailwindcss";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: autumn --default, dark --prefersdark, dracula;
+}
 
-/* App-level tweaks */
+
+/* Your custom CSS below */
 html, body, #root {
   height: 100%;
 }
 
-/* Prevent layout shift when vertical scrollbar appears/disappears
-   (e.g., when modals open/close). Widely supported in modern browsers. */
 html {
   scrollbar-gutter: stable both-edges;
 }

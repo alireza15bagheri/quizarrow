@@ -45,7 +45,7 @@ class QuizAdminSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         qlinks = validated_data.pop("quiz_questions", [])
         tags = validated_data.pop("tags", [])
-        quiz = Quiz.objects.create(host=self.context["request"].user, **validated_data)
+        quiz = Quiz.objects.create(**validated_data)
         if tags:
             quiz.tags.set(tags)
         for link in qlinks:

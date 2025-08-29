@@ -38,6 +38,10 @@ class HostNewQuizView(generics.CreateAPIView):
     serializer_class = QuizAdminSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    def perform_create(self, serializer):
+        """Ensure the quiz is saved with the current user as the host."""
+        serializer.save(host=self.request.user)
+
 
 class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
     """

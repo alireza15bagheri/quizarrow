@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import ThemeSwitcher from '../components/ThemeSwitcher'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -75,13 +76,15 @@ export default function LoginPage() {
                   <span>{error}</span>
                 </div>
               )}
-
-              <button
-                type="submit"
-                className={`btn btn-primary w-full ${loading ? 'btn-disabled' : ''}`}
-              >
-                {loading ? 'Signing in…' : 'Sign in'}
-              </button>
+              <div className="flex items-center justify-between gap-4">
+                <button
+                  type="submit"
+                  className={`btn btn-primary flex-grow ${loading ? 'btn-disabled' : ''}`}
+                >
+                  {loading ? 'Signing in…' : 'Sign in'}
+                </button>
+                <ThemeSwitcher />
+              </div>
             </form>
           </div>
         </div>
@@ -89,6 +92,7 @@ export default function LoginPage() {
         <p className="text-center text-sm text-base-content/60 mt-4">
           Don’t have an account yet? Create via Django admin for now.
         </p>
+        
       </div>
     </div>
   )

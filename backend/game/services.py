@@ -91,6 +91,9 @@ class GameService:
         Evaluates a user's answer payload against the question's answer key.
         """
         key = question.answer_key
+        # Check if payload is valid before accessing 'index'
+        if not payload or 'index' not in payload or payload.get('index') is None:
+            return False
         if question.type == Question.Type.MCQ:
             return key.get("correct_index") == payload.get("index")
         # Extend with other question types (TF, SHORT_TEXT) here if needed.
@@ -112,6 +115,10 @@ class GameService:
             raise ValidationError("Lobby is not active.")
         if not lobby.current_q or not lobby.question_started_at:
             raise ValidationError("No question is currently active.")
+        
+        # Check if an answer for this question has already been submitted.
+        if Answer.objects.filter(participant=participant, quiz_question=lobby.current_q).exists():
+            raise ValidationError("You have already answered this question.")
 
         # --- Time validation ---
         duration = lobby.current_q.effective_timer()
