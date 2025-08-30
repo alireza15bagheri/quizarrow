@@ -1,4 +1,4 @@
-from django.db.models import F
+from django.db.models import F, ProtectedError
 from django.utils import timezone
 from rest_framework import generics, permissions
 from rest_framework.response import Response
@@ -46,7 +46,7 @@ class HostNewQuizView(generics.CreateAPIView):
 class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
     """
     Lists quizzes belonging to the current user and allows deletion.
-    Prevents deletion if the quiz is published.
+    Prevents deletion if the quiz is published or has a session history.
     """
     serializer_class = QuizAdminSerializer
     permission_classes = [permissions.IsAuthenticated]
@@ -61,8 +61,21 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
         """
         quiz = get_object_or_404(self.get_queryset(), pk=kwargs.get("pk"))
         if quiz.is_published:
-            raise ValidationError("Published quizzes cannot be deleted.")
-        return self.destroy(request, *args, **kwargs)
+            return Response(
+                {"detail": "Published quizzes cannot be deleted."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        
+        try:
+            # The destroy method calls perform_destroy, which calls instance.delete()
+            self.destroy(request, *args, **kwargs)
+            # destroy returns a 204 No Content response on success
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except ProtectedError:
+            return Response(
+                {"detail": "This quiz cannot be deleted because it has a history of past sessions."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
 
 class QuizQuestionAddView(QuizEditPermissionMixin, generics.CreateAPIView):
