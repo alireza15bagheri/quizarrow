@@ -1,0 +1,80 @@
+from django.db.models import F
+from rest_framework import permissions, status
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from ..models import Quiz
+from ..serializers import QuizQuestionPublicSerializer
+from ..services import GameService
+
+
+class PublishedQuizzesListView(APIView):
+    """
+    Public endpoint to list all published quizzes with publisher info and dates.
+    """
+
+    permission_classes = [permissions.AllowAny]
+
+    def get(self, request):
+        qs = (
+            Quiz.objects.filter(is_published=True)
+            .select_related("host")
+            .annotate(publisher_username=F("host__username"))
+            .values(
+                "id",
+                "title",
+                "description",
+                "is_published",
+                "publisher_username",
+                "publish_date",
+                "available_to_date",
+            )
+        )
+        return Response(list(qs), status=status.HTTP_200_OK)
+
+
+class JoinLobbyView(APIView):
+    """
+    Starts a new solo quiz session for the logged-in user.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, quiz_id):
+        service = GameService()
+        lobby = service.start_solo_quiz(quiz_id=quiz_id, user=request.user)
+        return Response({"lobby_id": lobby.id}, status=status.HTTP_201_CREATED)
+
+
+class LobbyStateView(APIView):
+    """
+    Gets the current state of a game lobby (e.g., current question, time left).
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, lobby_id):
+        service = GameService()
+        state = service.get_lobby_state(lobby_id=lobby_id, user=request.user)
+
+        # Serialize the question part of the state if it exists
+        if state.get("question"):
+            serializer = QuizQuestionPublicSerializer(state["question"])
+            state["question"] = serializer.data
+
+        return Response(state)
+
+
+class SubmitAnswerView(APIView):
+    """
+    Submits an answer for the current question in a lobby.
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request, lobby_id):
+        service = GameService()
+        result = service.submit_answer(
+            lobby_id=lobby_id, user=request.user, payload=request.data
+        )
+        return Response(result, status=status.HTTP_200_OK)
