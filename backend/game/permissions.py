@@ -15,3 +15,15 @@ class IsHostOrAdmin(permissions.BasePermission):
         # Check if the user has a profile and the required role.
         profile = getattr(request.user, "profile", None)
         return profile and profile.role in [UserProfile.Role.HOST, UserProfile.Role.ADMIN]
+
+
+class IsAdminUser(permissions.BasePermission):
+    """
+    Allows access only to users with the 'admin' role.
+    """
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+            
+        profile = getattr(request.user, "profile", None)
+        return profile and profile.role == UserProfile.Role.ADMIN

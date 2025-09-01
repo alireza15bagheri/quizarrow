@@ -2,6 +2,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_protect
 from django.views.decorators.http import require_POST, require_GET
 from django.contrib.auth import authenticate, login, logout
+from .models import UserProfile
 
 # --- Response helpers (consistent shape) ---
 
@@ -41,11 +42,25 @@ def csrf(request):
     return json_ok({"detail": "CSRF cookie set"})
 
 def _get_user_data(user):
-    """Helper to consistently serialize user data."""
+    """
+    Helper to consistently serialize user data, safely handling missing profiles
+    and ensuring superusers are recognized as admins.
+    """
+    # Superusers are always admins, regardless of their profile.
+    if user.is_superuser:
+        role = UserProfile.Role.ADMIN
+    else:
+        # For regular users, safely check for a profile.
+        # Fallback to the default role if a profile somehow doesn't exist.
+        try:
+            role = user.profile.role
+        except UserProfile.DoesNotExist:
+            role = UserProfile.Role.PLAYER
+
     return {
         "id": user.id,
         "username": user.username,
-        "role": getattr(user, "profile", None) and user.profile.role,
+        "role": role,
     }
 
 @csrf_protect

@@ -22,6 +22,13 @@ from .history import (
     MyParticipationsListView,
     QuizParticipationDetailView,
 )
+from .admin_views import (
+    AdminUserListView,
+    AdminUserDetailView,
+    AdminQuizListView,
+    AdminQuizDetailView
+)
+
 
 __all__ = [
     # Quiz Management (for hosts)
@@ -39,4 +46,9 @@ __all__ = [
     # History
     "MyParticipationsListView",
     "QuizParticipationDetailView",
+    # Admin
+    "AdminUserListView",
+    "AdminUserDetailView",
+    "AdminQuizListView",
+    "AdminQuizDetailView"
 ]

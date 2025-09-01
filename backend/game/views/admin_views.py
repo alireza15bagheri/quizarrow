@@ -1,0 +1,69 @@
+from django.contrib.auth.models import User
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+from rest_framework import generics, permissions, status
+from rest_framework.response import Response
+
+from accounts.serializers import UserAdminSerializer
+from ..models import Quiz, LobbyRoom, LobbyParticipant
+from ..permissions import IsAdminUser
+from ..serializers import QuizAdminSerializer
+from ..signals import participant_deleted
+
+
+class AdminUserListView(generics.ListAPIView):
+    """
+    Admin endpoint to list all users with their roles.
+    """
+    queryset = User.objects.select_related("profile").all()
+    serializer_class = UserAdminSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+
+
+class AdminUserDetailView(generics.RetrieveUpdateAPIView):
+    """
+    Admin endpoint to update a user's role or active status.
+    """
+    queryset = User.objects.all()
+    serializer_class = UserAdminSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    lookup_field = 'pk'
+
+
+class AdminQuizListView(generics.ListAPIView):
+    """
+    Admin endpoint to list all quizzes from all users.
+    """
+    queryset = Quiz.objects.select_related("host").all()
+    serializer_class = QuizAdminSerializer
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+
+
+class AdminQuizDetailView(generics.DestroyAPIView):
+    """
+    Admin endpoint to delete any quiz.
+    """
+    queryset = Quiz.objects.all()
+    permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+    lookup_field = 'pk'
+
+    def perform_destroy(self, instance):
+        # The Quiz model has on_delete=PROTECT for lobbies
+        # have signals that fire on deletion. For a full admin wipe, we
+        # need to bypass some of this. The most direct way is to disconnect
+        # the signal that's causing the foreign key violation.
+        post_delete.disconnect(participant_deleted, sender=LobbyParticipant)
+        
+        try:
+            # Manually delete associated lobbies first to bypass PROTECT.
+            LobbyRoom.objects.filter(quiz=instance).delete()
+            # Now delete the quiz instance itself.
+            instance.delete()
+        finally:
+            # ALWAYS reconnect the signal to avoid side effects elsewhere.
+            post_delete.connect(participant_deleted, sender=LobbyParticipant)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        self.perform_destroy(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)

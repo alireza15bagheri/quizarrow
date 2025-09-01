@@ -32,13 +32,14 @@ class QuizAdminSerializer(serializers.ModelSerializer):
     tag_ids = serializers.PrimaryKeyRelatedField(
         source="tags", many=True, queryset=Tag.objects.all(), write_only=True, required=False
     )
+    publisher_username = serializers.CharField(source="host.username", read_only=True)
 
     class Meta:
         model = Quiz
         fields = [
             "id", "title", "description", "tags", "tag_ids",
             "is_published", "publish_date", "available_to_date",
-            "created_at", "updated_at", "quiz_questions",
+            "created_at", "updated_at", "quiz_questions", "publisher_username",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "tags", "publish_date"]
 

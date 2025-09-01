@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 
 from ..models import Quiz
 from ..serializers import QuizQuestionPublicSerializer
-from ..services import GameService
+from ..services import LobbyService, AnswerService
 
 
 class PublishedQuizzesListView(APIView):
@@ -41,7 +41,7 @@ class JoinLobbyView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, quiz_id):
-        service = GameService()
+        service = LobbyService()
         lobby = service.start_solo_quiz(quiz_id=quiz_id, user=request.user)
         return Response({"lobby_id": lobby.id}, status=status.HTTP_201_CREATED)
 
@@ -54,7 +54,7 @@ class LobbyStateView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, lobby_id):
-        service = GameService()
+        service = LobbyService()
         state = service.get_lobby_state(lobby_id=lobby_id, user=request.user)
 
         # Serialize the question part of the state if it exists
@@ -73,7 +73,7 @@ class SubmitAnswerView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def post(self, request, lobby_id):
-        service = GameService()
+        service = AnswerService()
         result = service.submit_answer(
             lobby_id=lobby_id, user=request.user, payload=request.data
         )

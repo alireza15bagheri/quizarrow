@@ -5,6 +5,7 @@ from .views import (
     PublishedQuizzesListView, JoinLobbyView, LobbyStateView, SubmitAnswerView,
     MyParticipationsListView, QuizParticipationDetailView,
 )
+from .views import admin_views
 
 urlpatterns = [
     # --- Quiz Management (for hosts) ---
@@ -25,4 +26,10 @@ urlpatterns = [
     # --- History ---
     path('participations/mine/', MyParticipationsListView.as_view(), name='my-participations'),
     path('participations/<int:pk>/', QuizParticipationDetailView.as_view(), name='participation-detail'),
+
+    # --- Admin ---
+    path('admin/users/', admin_views.AdminUserListView.as_view(), name='admin-user-list'),
+    path('admin/users/<int:pk>/', admin_views.AdminUserDetailView.as_view(), name='admin-user-detail'),
+    path('admin/quizzes/', admin_views.AdminQuizListView.as_view(), name='admin-quiz-list'),
+    path('admin/quizzes/<int:pk>/', admin_views.AdminQuizDetailView.as_view(), name='admin-quiz-detail'),
 ]

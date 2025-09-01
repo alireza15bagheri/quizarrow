@@ -29,6 +29,12 @@ function Icon({ name, className = 'w-8 h-8' }) {
             <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"/>
         </svg>
       )
+    case 'admin':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v4h-4zm0-6h4v4h-4z"/>
+        </svg>
+      )
     default:
       return null
   }
@@ -79,6 +85,16 @@ export default function DashboardPage() {
       accentClass: 'bg-info',
       buttonClass: 'btn-info',
       roles: ['player', 'host', 'admin'],
+    },
+    {
+      title: 'Admin Panel',
+      description: 'Manage users, roles, and moderate content across the platform.',
+      buttonText: 'Go to Panel',
+      path: '/admin',
+      icon: 'admin',
+      accentClass: 'bg-error',
+      buttonClass: 'btn-error',
+      roles: ['admin'],
     }
   ], []);
 

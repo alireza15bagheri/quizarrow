@@ -13,8 +13,9 @@ import ParticipationHistoryPage from './pages/ParticipationHistoryPage'
 import QuizResultPage from './pages/QuizResultPage'
 import { NotificationProvider } from './context/NotificationContext'
 import { ConfirmationProvider } from './context/ConfirmationContext'
+import AdminPage from './pages/AdminPage'
 
-function ProtectedRoute({ children }) {
+function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
@@ -25,6 +26,9 @@ function ProtectedRoute({ children }) {
   }
   if (!user) {
     return <Navigate to="/login" replace />
+  }
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
   }
   return children
 }
@@ -81,7 +85,7 @@ export default function App() {
             <Route
               path="/quizzes/new"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['host', 'admin']}>
                   <AppLayout>
                     <CreateQuizPage />
                   </AppLayout>
@@ -91,7 +95,7 @@ export default function App() {
             <Route
               path="/quizzes/mine"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['host', 'admin']}>
                   <AppLayout>
                     <MyQuizzesPage />
                   </AppLayout>
@@ -101,7 +105,7 @@ export default function App() {
             <Route
               path="/quizzes/:id/edit"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['host', 'admin']}>
                   <AppLayout>
                     <EditQuizQuestionsPage />
                   </AppLayout>
@@ -111,7 +115,7 @@ export default function App() {
             <Route
               path="/sessions"
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedRoles={['host', 'admin']}>
                   <AppLayout>
                     <MySessionsPage />
                   </AppLayout>
@@ -142,6 +146,16 @@ export default function App() {
                 <ProtectedRoute>
                   <AppLayout>
                     <QuizResultPage />
+                  </AppLayout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute allowedRoles={['admin']}>
+                  <AppLayout>
+                    <AdminPage />
                   </AppLayout>
                 </ProtectedRoute>
               }
