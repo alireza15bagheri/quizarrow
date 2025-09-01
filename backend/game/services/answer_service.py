@@ -1,90 +1,15 @@
-import random
-import string
 from django.utils import timezone
 from django.db import transaction, IntegrityError
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
-from .models import (
-    Quiz, LobbyRoom, LobbyParticipant, QuizQuestion, Answer, Question, QuizParticipation
-)
+from ..models import LobbyRoom, LobbyParticipant, Answer, Question
+from .history_service import HistoryService
 
 
-class GameService:
+class AnswerService:
     """
-    Encapsulates business logic for the quiz game lifecycle.
+    Encapsulates business logic for submitting and evaluating answers.
     """
-
-    def _generate_lobby_code(self):
-        """Generates a unique 8-character uppercase code for a lobby."""
-        while True:
-            code = "".join(random.choices(string.ascii_uppercase + string.digits, k=8))
-            if not LobbyRoom.objects.filter(code=code).exists():
-                return code
-
-    def start_solo_quiz(self, quiz_id, user):
-        """
-        Creates a new solo lobby session for a user to take a quiz.
-        """
-        try:
-            quiz = Quiz.objects.get(pk=quiz_id, is_published=True)
-        except Quiz.DoesNotExist:
-            raise ValidationError("Published quiz not found.")
-
-        lobby = LobbyRoom.objects.create(
-            code=self._generate_lobby_code(),
-            quiz=quiz,
-            host=user,
-            status=LobbyRoom.Status.RUNNING,
-            started_at=timezone.now(),
-        )
-
-        LobbyParticipant.objects.create(
-            lobby=lobby, user=user, nickname=user.username, is_host=True, connected=True
-        )
-
-        return lobby
-
-    def get_lobby_state(self, lobby_id, user):
-        """
-        Retrieves the current state of a lobby for a participant.
-        Advances to the first question if the game is just starting.
-        """
-        try:
-            lobby = LobbyRoom.objects.get(pk=lobby_id, host=user)
-            participant = LobbyParticipant.objects.get(lobby=lobby, user=user)
-        except (LobbyRoom.DoesNotExist, LobbyParticipant.DoesNotExist):
-            raise PermissionDenied("You are not in this lobby.")
-
-        if lobby.status != LobbyRoom.Status.RUNNING:
-            return {"status": lobby.status, "detail": "Lobby is not active."}
-
-        # If quiz is just starting (no current question), serve the first one.
-        if not lobby.current_q:
-            first_q = lobby.quiz.quiz_questions.order_by("order").first()
-            if not first_q:
-                lobby.status = LobbyRoom.Status.ENDED
-                lobby.ended_at = timezone.now()
-                lobby.save()
-                return {"status": lobby.status, "detail": "Quiz has no questions."}
-            
-            lobby.current_q = first_q
-            lobby.question_started_at = timezone.now()
-            lobby.save()
-
-        time_left = 0
-        if lobby.question_started_at:
-            duration = lobby.current_q.effective_timer()
-            elapsed = (timezone.now() - lobby.question_started_at).total_seconds()
-            time_left = max(0, duration - elapsed)
-        
-        return {
-            "status": lobby.status,
-            "lobby_id": lobby.id,
-            "quiz_title": lobby.quiz.title,
-            "question": lobby.current_q,
-            "score": participant.score,
-            "time_left": time_left,
-        }
 
     def _evaluate_answer(self, question: Question, payload: dict):
         """
@@ -104,7 +29,7 @@ class GameService:
             submitted_answer = (payload.get("answer") or "").strip()
             if not submitted_answer:
                 return False
-            
+
             accepted_answers = key.get("accepted", [])
             mode = key.get("mode", "casefold")
 
@@ -112,11 +37,11 @@ class GameService:
                 return submitted_answer in accepted_answers
             elif mode == "casefold":
                 return submitted_answer.casefold() in [ans.casefold() for ans in accepted_answers]
-        
+
         return False
 
     @transaction.atomic
-    def submit_answer(self, lobby_id, user, payload):
+    def submit_answer(self, lobby_id: int, user, payload: dict):
         """
         Processes a user's answer submission for the current question.
         Scores the answer, updates state, and advances to the next question.
@@ -131,7 +56,7 @@ class GameService:
             raise ValidationError("Lobby is not active.")
         if not lobby.current_q or not lobby.question_started_at:
             raise ValidationError("No question is currently active.")
-        
+
         # --- Time validation ---
         duration = lobby.current_q.effective_timer()
         elapsed = (timezone.now() - lobby.question_started_at).total_seconds()
@@ -194,10 +119,9 @@ class GameService:
             lobby.save()
 
             # Create historical participation record
-            participation = QuizParticipation.objects.create(
-                user=user,
-                quiz=lobby.quiz,
+            history_service = HistoryService()
+            participation = history_service.create_participation_record(
                 lobby=lobby,
-                final_score=participant.score
+                participant=participant,
             )
             return {"status": "finished", "score": participant.score, "participation_id": participation.id}
