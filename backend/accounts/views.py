@@ -40,6 +40,14 @@ def csrf(request):
     # Sets csrftoken cookie on the response
     return json_ok({"detail": "CSRF cookie set"})
 
+def _get_user_data(user):
+    """Helper to consistently serialize user data."""
+    return {
+        "id": user.id,
+        "username": user.username,
+        "role": getattr(user, "profile", None) and user.profile.role,
+    }
+
 @csrf_protect
 @require_POST
 def login_view(request):
@@ -60,8 +68,7 @@ def login_view(request):
         return json_error("Invalid username or password", code="invalid_credentials", status=401)
 
     login(request, user)
-    # Keep existing "user" key for frontend compatibility
-    return json_ok({"user": {"id": user.id, "username": user.username}})
+    return json_ok(_get_user_data(user))
 
 @csrf_protect
 @require_POST
@@ -72,7 +79,5 @@ def logout_view(request):
 @require_GET
 def me(request):
     if request.user.is_authenticated:
-        u = request.user
-        # Preserve shape used by frontend (object with id/username)
-        return json_ok({"id": u.id, "username": u.username})
+        return json_ok(_get_user_data(request.user))
     return json_error("Anonymous", code="anonymous", status=401)

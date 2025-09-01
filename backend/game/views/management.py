@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 
 from ..models import Quiz, QuizQuestion, Question
 from ..serializers import QuizAdminSerializer, QuizQuestionAdminSerializer
+from ..permissions import IsHostOrAdmin
 
 
 class QuizEditPermissionMixin:
@@ -33,7 +34,7 @@ class HostNewQuizView(generics.CreateAPIView):
     """
 
     serializer_class = QuizAdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def perform_create(self, serializer):
         """Ensure the quiz is saved with the current user as the host."""
@@ -47,7 +48,7 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
     """
 
     serializer_class = QuizAdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def get_queryset(self):
         # Only quizzes created by this user
@@ -87,7 +88,7 @@ class QuizQuestionAddView(QuizEditPermissionMixin, generics.CreateAPIView):
     """
 
     serializer_class = QuizQuestionAdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def create(self, request, *args, **kwargs):
         quiz = self.get_owned_quiz_or_403(kwargs["pk"], allow_published=False)
@@ -123,7 +124,7 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
     """
 
     serializer_class = QuizAdminSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def get_queryset(self):
         # Only quizzes created by the logged-in user
@@ -150,13 +151,12 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
                     )
 
                 quiz.publish_date = timezone.now()
-                quiz.save(update_fields=["publish_date"])
 
         return super().update(request, *args, **kwargs)
 
 
 class QuizQuestionDeleteView(QuizEditPermissionMixin, APIView):
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def delete(self, request, pk, qid):
         """
@@ -176,7 +176,7 @@ class QuizQuestionUpdateView(QuizEditPermissionMixin, APIView):
     Sending null resets to the Question defaults (effective_* fields).
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
 
     def patch(self, request, pk, qid):
         quiz = self.get_owned_quiz_or_403(pk, allow_published=False)

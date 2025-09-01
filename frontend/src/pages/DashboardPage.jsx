@@ -1,5 +1,6 @@
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useMemo } from 'react';
 
 // Self-contained Icon component for dashboard cards
 function Icon({ name, className = 'w-8 h-8' }) {
@@ -38,7 +39,7 @@ export default function DashboardPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   
-  const cards = [
+  const allCards = useMemo(() => [
     {
       title: 'Create Quiz',
       description: 'Build a new quiz from scratch and add your own questions.',
@@ -47,6 +48,7 @@ export default function DashboardPage() {
       icon: 'create',
       accentClass: 'bg-primary',
       buttonClass: 'btn-primary',
+      roles: ['host', 'admin'],
     },
     {
       title: 'My Quizzes',
@@ -56,6 +58,7 @@ export default function DashboardPage() {
       icon: 'quizzes',
       accentClass: 'bg-secondary',
       buttonClass: 'btn-secondary',
+      roles: ['host', 'admin'],
     },
     {
       title: 'My Sessions',
@@ -65,6 +68,7 @@ export default function DashboardPage() {
       icon: 'sessions',
       accentClass: 'bg-accent',
       buttonClass: 'btn-accent',
+      roles: ['host', 'admin'],
     },
     {
       title: 'Participation History',
@@ -74,8 +78,11 @@ export default function DashboardPage() {
       icon: 'history',
       accentClass: 'bg-info',
       buttonClass: 'btn-info',
+      roles: ['player', 'host', 'admin'],
     }
-  ]
+  ], []);
+
+  const visibleCards = allCards.filter(card => user?.role && card.roles.includes(user.role));
 
   return (
     <div className="w-full max-w-4xl mx-auto">
@@ -89,7 +96,7 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
-        {cards.map((card) => (
+        {visibleCards.map((card) => (
           <div
             key={card.title}
             className="card bg-base-100 shadow-lg hover:shadow-2xl transition-all duration-300 ease-in-out hover:-translate-y-1 relative group"

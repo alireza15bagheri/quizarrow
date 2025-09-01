@@ -1,6 +1,6 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 
 function Icon({ name, className = 'w-4 h-4' }) {
   // Minimal inline icons with no external deps
@@ -40,7 +40,7 @@ function Icon({ name, className = 'w-4 h-4' }) {
   }
 }
 
-function NavLinks({ onClick, isActive }) {
+function NavLinks({ onClick, isActive, userRole }) {
   const linkBase =
     // Base (mobile): roomier; md: tighter; lg: roomy again. Prevent label wrapping.
     'inline-flex items-center gap-2 md:gap-1.5 lg:gap-2 px-4 md:px-3 lg:px-4 py-2 rounded-full whitespace-nowrap transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-primary/60'
@@ -48,17 +48,20 @@ function NavLinks({ onClick, isActive }) {
     'bg-gradient-to-r from-secondary to-primary text-base-100 shadow-md'
   const inactiveClasses =
     'text-base-content/80 hover:text-base-content hover:bg-base-200/80 hover:shadow-sm'
-  const items = [
-    { to: '/dashboard', label: 'Dashboard', icon: 'dashboard' },
-    { to: '/lobby', label: 'Lobby', icon: 'lobby' },
-    { to: '/quizzes/mine', label: 'My Quizzes', icon: 'quizzes' },
-    { to: '/sessions', label: 'My Sessions', icon: 'sessions' },
-    { to: '/history', label: 'History', icon: 'history' },
-  ]
+  
+  const allItems = useMemo(() => [
+    { to: '/dashboard', label: 'Dashboard', icon: 'dashboard', roles: ['player', 'host', 'admin'] },
+    { to: '/lobby', label: 'Lobby', icon: 'lobby', roles: ['player', 'host', 'admin'] },
+    { to: '/quizzes/mine', label: 'My Quizzes', icon: 'quizzes', roles: ['host', 'admin'] },
+    { to: '/sessions', label: 'My Sessions', icon: 'sessions', roles: ['host', 'admin'] },
+    { to: '/history', label: 'History', icon: 'history', roles: ['player', 'host', 'admin'] },
+  ], []);
+
+  const visibleItems = allItems.filter(item => item.roles.includes(userRole));
 
   return (
     <>
-      {items.map((it) => {
+      {visibleItems.map((it) => {
         const active = isActive(it.to)
         const cls = `${linkBase} ${active ? activeClasses : inactiveClasses}`
         return (
@@ -114,8 +117,8 @@ export default function Navbar() {
         </button>
 
         {/* Brand */}
-        <Link to="/dashboard" className="btn btn-ghost normal-case text-xl">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-secondary">
+        <Link to="/dashboard" className="btn btn-ghost normal-case text-xl group">
+          <span className="font-mono bg-clip-text text-transparent bg-gradient-to-r from-primary via-accent to-secondary">
             Quizarrow
           </span>
         </Link>
@@ -123,7 +126,7 @@ export default function Navbar() {
 
       {/* Desktop menu */}
       <nav className="hidden md:flex items-center gap-2 md:gap-1.5 lg:gap-2">
-        <NavLinks isActive={isActive} />
+        <NavLinks isActive={isActive} userRole={user?.role} />
       </nav>
 
       {/* Right side actions */}
@@ -148,7 +151,7 @@ export default function Navbar() {
           <div className="absolute left-2 top-16 z-50 md:hidden">
             <div className="bg-base-100 rounded-box w-64 p-3 shadow-lg border border-base-200">
               <div className="flex flex-col gap-2">
-                <NavLinks onClick={closeMobile} isActive={isActive} />
+                <NavLinks onClick={closeMobile} isActive={isActive} userRole={user?.role} />
               </div>
             </div>
           </div>
