@@ -2,40 +2,22 @@ import { useParams } from 'react-router-dom'
 import useQuizQuestions from '../hooks/useQuizQuestions'
 import QuestionForm from '../components/quiz/QuestionForm'
 import QuestionsTable from '../components/quiz/QuestionsTable'
-import { useEffect, useState } from 'react'
-import { getQuizDetail } from '../lib/api/quizzes'
 
 export default function EditQuizQuestionsPage() {
   const { id } = useParams()
-  const [isPublished, setIsPublished] = useState(false)
-  const [loadingMeta, setLoadingMeta] = useState(true)
   const {
     quizTitle,
     quizDescription,
     questions,
     initialLoading,
+    isPublished,
     error,
     addMcqQuestion,
     removeQuestion,
     updateQuestionSettings,
   } = useQuizQuestions(id)
 
-  useEffect(() => {
-    async function fetchMeta() {
-      setLoadingMeta(true)
-      try {
-        const quiz = await getQuizDetail(id)
-        setIsPublished(!!quiz.is_published)
-      } catch {
-        setIsPublished(false)
-      } finally {
-        setLoadingMeta(false)
-      }
-    }
-    fetchMeta()
-  }, [id])
-
-  if (initialLoading || loadingMeta) {
+  if (initialLoading) {
     return <div>Loading quiz info…</div>
   }
 

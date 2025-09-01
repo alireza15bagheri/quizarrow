@@ -10,7 +10,7 @@ export default function useQuizQuestions(quizId) {
     quizTitle,
     quizDescription,
     questions,
-    setQuestions,
+    isPublished,
     loading,
     error,
     refresh,
@@ -50,11 +50,14 @@ export default function useQuizQuestions(quizId) {
   const removeQuestion = useCallback(
     async (quizQuestionId) => {
       setError(null)
-      await deleteQuizQuestion(quizId, quizQuestionId)
-      // Optimistic update
-      setQuestions((prev) => prev.filter((q) => q.id !== quizQuestionId))
+      try {
+        await deleteQuizQuestion(quizId, quizQuestionId)
+        await refresh() // Refetch the list to ensure consistency
+      } catch (err) {
+        setError(err.message || 'Failed to remove question.')
+      }
     },
-    [quizId, setQuestions, setError]
+    [quizId, refresh, setError]
   )
 
   const updateQuestionSettings = useCallback(
@@ -76,6 +79,7 @@ export default function useQuizQuestions(quizId) {
     quizTitle,
     quizDescription,
     questions,
+    isPublished,
     initialLoading: loading,
     error,
     addMcqQuestion,

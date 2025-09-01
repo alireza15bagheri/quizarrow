@@ -1,7 +1,7 @@
 import random
 import string
 from django.utils import timezone
-from django.db import transaction
+from django.db import transaction, IntegrityError
 from rest_framework.exceptions import ValidationError, PermissionDenied
 
 from .models import (
@@ -91,12 +91,28 @@ class GameService:
         Evaluates a user's answer payload against the question's answer key.
         """
         key = question.answer_key
-        # Check if payload is valid before accessing 'index'
-        if not payload or 'index' not in payload or payload.get('index') is None:
+        if not payload:
             return False
+
         if question.type == Question.Type.MCQ:
             return key.get("correct_index") == payload.get("index")
-        # Extend with other question types (TF, SHORT_TEXT) here if needed.
+
+        if question.type == Question.Type.TRUE_FALSE:
+            return key.get("is_true") == payload.get("answer")
+
+        if question.type == Question.Type.SHORT_TEXT:
+            submitted_answer = (payload.get("answer") or "").strip()
+            if not submitted_answer:
+                return False
+            
+            accepted_answers = key.get("accepted", [])
+            mode = key.get("mode", "casefold")
+
+            if mode == "exact":
+                return submitted_answer in accepted_answers
+            elif mode == "casefold":
+                return submitted_answer.casefold() in [ans.casefold() for ans in accepted_answers]
+        
         return False
 
     @transaction.atomic
@@ -116,10 +132,6 @@ class GameService:
         if not lobby.current_q or not lobby.question_started_at:
             raise ValidationError("No question is currently active.")
         
-        # Check if an answer for this question has already been submitted.
-        if Answer.objects.filter(participant=participant, quiz_question=lobby.current_q).exists():
-            raise ValidationError("You have already answered this question.")
-
         # --- Time validation ---
         duration = lobby.current_q.effective_timer()
         elapsed = (timezone.now() - lobby.question_started_at).total_seconds()
@@ -147,15 +159,18 @@ class GameService:
             participant.save(update_fields=["score"])
 
             # Create Answer record
-            Answer.objects.create(
-                lobby=lobby,
-                participant=participant,
-                quiz_question=lobby.current_q,
-                payload=payload,
-                is_correct=is_correct,
-                points_awarded=points,
-                response_time_ms=int(elapsed * 1000)
-            )
+            try:
+                Answer.objects.create(
+                    lobby=lobby,
+                    participant=participant,
+                    quiz_question=lobby.current_q,
+                    payload=payload,
+                    is_correct=is_correct,
+                    points_awarded=points,
+                    response_time_ms=int(elapsed * 1000)
+                )
+            except IntegrityError:
+                raise ValidationError("You have already answered this question.")
 
         # --- Advance to Next Question or End ---
         current_order = lobby.current_q.order

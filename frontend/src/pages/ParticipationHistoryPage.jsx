@@ -109,7 +109,7 @@ export default function ParticipationHistoryPage() {
         {filteredParticipations.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="table table-zebra">
               <thead>
                 <tr>

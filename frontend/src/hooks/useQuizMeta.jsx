@@ -9,6 +9,7 @@ export default function useQuizMeta(quizId) {
   const [quizTitle, setQuizTitle] = useState('')
   const [quizDescription, setQuizDescription] = useState('')
   const [questions, setQuestions] = useState([])
+  const [isPublished, setIsPublished] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -18,6 +19,7 @@ export default function useQuizMeta(quizId) {
     setQuizTitle(quiz.title)
     setQuizDescription(quiz.description)
     setQuestions(quiz.quiz_questions || [])
+    setIsPublished(quiz.is_published || false)
   }, [quizId])
 
   useEffect(() => {
@@ -41,6 +43,7 @@ export default function useQuizMeta(quizId) {
     quizDescription,
     questions,
     setQuestions, // allow child hooks to optimistically update
+    isPublished,
     loading,
     error,
     refresh,
