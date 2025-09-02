@@ -28,6 +28,9 @@ from .admin_views import (
     AdminQuizListView,
     AdminQuizDetailView
 )
+from .tags_view import (
+    TagListView,
+)
 
 
 __all__ = [
@@ -50,5 +53,7 @@ __all__ = [
     "AdminUserListView",
     "AdminUserDetailView",
     "AdminQuizListView",
-    "AdminQuizDetailView"
+    "AdminQuizDetailView",
+    # Tags
+    "TagListView",
 ]

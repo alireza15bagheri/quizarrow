@@ -58,6 +58,13 @@ class QuizAdminSerializer(serializers.ModelSerializer):
                 link["question"] = question
             QuizQuestion.objects.create(quiz=quiz, **link)
         return quiz
+    
+    def update(self, instance, validated_data):
+        tags = validated_data.pop("tags", None)
+        instance = super().update(instance, validated_data)
+        if tags is not None:
+            instance.tags.set(tags)
+        return instance
 
 
 class QuizQuestionPublicSerializer(serializers.ModelSerializer):
@@ -85,4 +92,19 @@ class QuizPublicSerializer(serializers.ModelSerializer):
         fields = [
             "id", "title", "description", "tags",
             "is_published", "quiz_questions",
+        ]
+
+class QuizLobbySerializer(serializers.ModelSerializer):
+    """
+    Serializer for quizzes listed in the public lobby.
+    Includes tags for filtering.
+    """
+    tags = TagSerializer(many=True, read_only=True)
+    publisher_username = serializers.CharField(source="host.username", read_only=True)
+
+    class Meta:
+        model = Quiz
+        fields = [
+            "id", "title", "description", "tags",
+            "publisher_username", "publish_date", "available_to_date",
         ]

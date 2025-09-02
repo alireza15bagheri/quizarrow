@@ -1,36 +1,22 @@
 from django.db.models import F
-from rest_framework import permissions, status
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import Quiz
-from ..serializers import QuizQuestionPublicSerializer
+from ..serializers import QuizQuestionPublicSerializer, QuizLobbySerializer
 from ..services import LobbyService, AnswerService
 
 
-class PublishedQuizzesListView(APIView):
+class PublishedQuizzesListView(generics.ListAPIView):
     """
     Public endpoint to list all published quizzes with publisher info and dates.
     """
-
+    serializer_class = QuizLobbySerializer
     permission_classes = [permissions.AllowAny]
 
-    def get(self, request):
-        qs = (
-            Quiz.objects.filter(is_published=True)
-            .select_related("host")
-            .annotate(publisher_username=F("host__username"))
-            .values(
-                "id",
-                "title",
-                "description",
-                "is_published",
-                "publisher_username",
-                "publish_date",
-                "available_to_date",
-            )
-        )
-        return Response(list(qs), status=status.HTTP_200_OK)
+    def get_queryset(self):
+        return Quiz.objects.filter(is_published=True).select_related("host").prefetch_related("tags")
 
 
 class JoinLobbyView(APIView):

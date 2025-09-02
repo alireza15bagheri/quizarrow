@@ -1,5 +1,5 @@
 """
-Aggregate and re‑export all serializers so external code
+Aggregate and re-export all serializers so external code
 can still do:  from game.serializers import QuizAdminSerializer, ...
 """
 
@@ -10,6 +10,7 @@ from .quizzes import (
     QuizPublicSerializer,
     QuizQuestionAdminSerializer,
     QuizQuestionPublicSerializer,
+    QuizLobbySerializer,
 )
 from .lobby import LobbySerializer, LobbyParticipantSerializer
 from .answers import AnswerSerializer, AnswerSubmitSerializer
@@ -26,6 +27,7 @@ __all__ = [
     "QuizPublicSerializer",
     "QuizQuestionAdminSerializer",
     "QuizQuestionPublicSerializer",
+    "QuizLobbySerializer",
     # lobby
     "LobbySerializer",
     "LobbyParticipantSerializer",

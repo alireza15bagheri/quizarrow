@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext'
 import { getPublishedQuizzes } from '../lib/api/quizzes'
 import { joinLobby } from '../lib/api/game'
 import { useNavigate } from 'react-router-dom'
+import { getAllTags } from '../lib/api/tags'
+import TagSelector from '../components/quiz/TagSelector'
 
 function Icon({ name, className = 'w-4 h-4' }) {
   switch (name) {
@@ -34,34 +36,48 @@ export default function LobbyPage() {
   const navigate = useNavigate()
 
   const [allQuizzes, setAllQuizzes] = useState([])
-  const [loadingQuizzes, setLoadingQuizzes] = useState(true)
-  const [quizzesError, setQuizzesError] = useState(null)
+  const [allTags, setAllTags] = useState([]);
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [joiningId, setJoiningId] = useState(null)
   const [searchId, setSearchId] = useState('')
+  const [selectedTagIds, setSelectedTagIds] = useState(new Set());
 
   useEffect(() => {
-    let mounted = true
-    ;(async () => {
+    let mounted = true;
+    (async () => {
       try {
-        const data = await getPublishedQuizzes()
-        if (mounted) setAllQuizzes(Array.isArray(data) ? data : [])
+        const [quizzesData, tagsData] = await Promise.all([getPublishedQuizzes(), getAllTags()]);
+        if (mounted) {
+          setAllQuizzes(Array.isArray(quizzesData) ? quizzesData : []);
+          setAllTags(Array.isArray(tagsData) ? tagsData : []);
+        }
       } catch (err) {
-        if (mounted) setQuizzesError(err.message || 'Failed to load quizzes')
+        if (mounted) setError(err.message || 'Failed to load lobby data');
       } finally {
-        if (mounted) setLoadingQuizzes(false)
+        if (mounted) setLoading(false);
       }
-    })()
+    })();
     return () => {
-      mounted = false
-    }
-  }, [])
+      mounted = false;
+    };
+  }, []);
 
   const filteredQuizzes = useMemo(() => {
-    if (!searchId.trim()) {
-      return allQuizzes
+    let quizzes = allQuizzes;
+    // Filter by search ID first
+    if (searchId.trim()) {
+      quizzes = quizzes.filter((quiz) => String(quiz.id) === searchId.trim());
     }
-    return allQuizzes.filter((quiz) => String(quiz.id) === searchId.trim())
-  }, [allQuizzes, searchId])
+    // Then filter by selected tags
+    if (selectedTagIds.size > 0) {
+      quizzes = quizzes.filter(quiz => {
+        const quizTagIds = new Set(quiz.tags.map(t => t.id));
+        return Array.from(selectedTagIds).every(id => quizTagIds.has(id));
+      });
+    }
+    return quizzes;
+  }, [allQuizzes, searchId, selectedTagIds]);
 
   const handleTakeQuiz = async (quizId) => {
     setJoiningId(quizId)
@@ -69,7 +85,7 @@ export default function LobbyPage() {
        const { lobby_id } = await joinLobby(quizId)
       navigate(`/quiz/take/${lobby_id}`)
     } catch (err) {
-      setQuizzesError(err.message || 'Could not start quiz session.')
+      setError(err.message || 'Could not start quiz session.')
     } finally {
       setJoiningId(null)
     }
@@ -102,42 +118,48 @@ export default function LobbyPage() {
       <div className="mt-8">
         <h2 className="text-2xl font-semibold mb-4">Available Quizzes</h2>
 
-        <div className="form-control mb-4">
-          <label htmlFor="quiz-id-search" className="label">
-            <span className="label-text">Quiz ID</span>
-          </label>
-          <div className="flex gap-2">
-            <input
-              id="quiz-id-search"
-              type="text"
-              placeholder="Enter Quiz ID to find a specific quiz"
-              className="input input-bordered w-full"
-              value={searchId}
-              onChange={(e) => setSearchId(e.target.value)}
-            />
-            <button
-              className="btn btn-neutral"
-              onClick={() => setSearchId('')}
-              disabled={!searchId}
-            >
-              Clear
-            </button>
+        <div className="p-4 bg-base-200 rounded-box mb-4 space-y-4">
+          <div>
+            <label htmlFor="quiz-id-search" className="label">
+              <span className="label-text font-semibold">Search by Quiz ID</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="quiz-id-search"
+                type="text"
+                placeholder="Enter exact Quiz ID..."
+                className="input input-bordered w-full"
+                value={searchId}
+                onChange={(e) => setSearchId(e.target.value)}
+              />
+              <button
+                className="btn btn-neutral"
+                onClick={() => setSearchId('')}
+                disabled={!searchId}
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+          <div>
+            <label className="label">
+              <span className="label-text font-semibold">Filter by Tags</span>
+            </label>
+            <TagSelector allTags={allTags} selectedTagIds={selectedTagIds} onTagChange={setSelectedTagIds} />
           </div>
         </div>
 
-        {loadingQuizzes && <p>Loading quizzes…</p>}
+        {loading && <p>Loading quizzes…</p>}
 
-        {quizzesError && (
+        {error && (
           <div className="alert alert-error mb-4">
-            <span>{quizzesError}</span>
+            <span>{error}</span>
           </div>
         )}
 
-        {!loadingQuizzes && !quizzesError && filteredQuizzes.length === 0 && (
+        {!loading && !error && filteredQuizzes.length === 0 && (
           <p>
-            {searchId.trim()
-              ? 'No quiz found with that ID.'
-              : 'No quizzes are currently published.'}
+            No quizzes match your selected filters.
           </p>
         )}
 
@@ -160,6 +182,17 @@ export default function LobbyPage() {
                   </h3>
                    <span className="badge badge-success badge-sm mt-1">Published</span>
                 </div>
+
+                {/* Tags Display */}
+                {quiz.tags && quiz.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 my-2">
+                    {quiz.tags.map(tag => (
+                      <div key={tag.id} className="badge bg-neutral/70 text-neutral-content text-xs font-semibold p-3">
+                        {tag.name}
+                      </div>
+                    ))}
+                  </div>
+                )}
 
                 {/* Optional description */}
                 {quiz.description && (

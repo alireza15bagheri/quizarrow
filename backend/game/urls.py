@@ -5,7 +5,7 @@ from .views import (
     PublishedQuizzesListView, JoinLobbyView, LobbyStateView, SubmitAnswerView,
     MyParticipationsListView, QuizParticipationDetailView,
 )
-from .views import admin_views
+from .views import admin_views, tags_view
 
 urlpatterns = [
     # --- Quiz Management (for hosts) ---
@@ -16,6 +16,9 @@ urlpatterns = [
     path('quizzes/<int:pk>/questions/', QuizQuestionAddView.as_view(), name='quiz-add-question'),
     path('quizzes/<int:pk>/questions/<int:qid>/', QuizQuestionDeleteView.as_view(), name='quiz-delete-question'),
     path('quizzes/<int:pk>/questions/<int:qid>/update/', QuizQuestionUpdateView.as_view(), name='quiz-update-question'),
+    
+    # --- Tags ---
+    path('tags/', tags_view.TagListView.as_view(), name='tag-list'),
     
     # --- Public & Gameplay ---
     path('quizzes/published/', PublishedQuizzesListView.as_view(), name='published-quizzes'),

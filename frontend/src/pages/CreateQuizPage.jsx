@@ -1,20 +1,32 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { hostNewQuiz } from '../lib/api/quizzes'
+import { getAllTags } from '../lib/api/tags'
+import TagSelector from '../components/quiz/TagSelector'
 
 export default function CreateQuizPage() {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [allTags, setAllTags] = useState([]);
+  const [selectedTagIds, setSelectedTagIds] = useState(new Set());
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const navigate = useNavigate()
 
+  useEffect(() => {
+    getAllTags().then(setAllTags).catch(() => setError('Could not load tags.'));
+  }, []);
+
   const onSubmit = async (e) => {
     e.preventDefault()
+    if (selectedTagIds.size === 0) {
+      setError("Please select at least one tag for the quiz.");
+      return;
+    }
     setLoading(true)
     setError(null)
     try {
-      const payload = { title, description }
+      const payload = { title, description, tag_ids: Array.from(selectedTagIds) }
       await hostNewQuiz(payload)
       navigate('/dashboard', { replace: true })
     } catch (err) {
@@ -33,6 +45,14 @@ export default function CreateQuizPage() {
         </div>
       )}
       <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="label">Tags (select at least one)</label>
+          <TagSelector 
+            allTags={allTags}
+            selectedTagIds={selectedTagIds}
+            onTagChange={setSelectedTagIds}
+          />
+        </div>
         <div>
           <label className="label">Title</label>
           <input
