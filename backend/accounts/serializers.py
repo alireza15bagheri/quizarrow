@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from .models import UserProfile
 
 
@@ -27,11 +28,20 @@ class UserAdminSerializer(serializers.ModelSerializer):
         instance.save()
 
         # Update role on the nested UserProfile model
-        # The request context is needed to access the raw request data for the nested field
         profile_data = self.context['request'].data.get('profile')
         if profile_data and 'role' in profile_data:
+            # Enforce business rule: only allow changing to 'player' or 'host'
+            new_role = profile_data['role']
+            if new_role == UserProfile.Role.ADMIN:
+                raise ValidationError({"profile": {"role": "Cannot set user role to 'admin'."}})
+            
+            # Enforce business rule: prevent an admin from changing their own role
+            requesting_user = self.context['request'].user
+            if instance.id == requesting_user.id:
+                 raise ValidationError({"profile": {"role": "You cannot change your own role."}})
+            
             profile = instance.profile
-            profile.role = profile_data['role']
+            profile.role = new_role
             profile.save()
 
         return instance

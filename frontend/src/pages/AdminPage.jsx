@@ -3,7 +3,6 @@ import { useNotifier } from '../context/NotificationContext';
 import { useConfirm } from '../context/ConfirmationContext';
 import { getAllUsers, updateUser, getAllQuizzes, adminDeleteQuiz } from '../lib/api/admin';
 import { useAuth } from '../context/AuthContext';
-
 export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -13,7 +12,6 @@ export default function AdminPage() {
   const { notify } = useNotifier();
   const { confirmAction } = useConfirm();
   const { user: currentUser } = useAuth();
-
   const fetchData = async () => {
     setLoading(true);
     setError(null);
@@ -30,14 +28,12 @@ export default function AdminPage() {
       setLoading(false);
     }
   };
-
   useEffect(() => {
     // Ensure currentUser is loaded before fetching data
     if (currentUser) {
       fetchData();
     }
   }, [currentUser]);
-
   const handleRoleChange = async (user, newRole) => {
     try {
       await updateUser(user.id, { profile: { role: newRole } });
@@ -65,7 +61,6 @@ export default function AdminPage() {
       confirmText: 'Delete Permanently',
       confirmButtonClass: 'btn-error',
     });
-
     if (confirmed) {
       try {
         await adminDeleteQuiz(quiz.id);
@@ -84,7 +79,6 @@ export default function AdminPage() {
     const hostUsername = users.find(u => u.id === parseInt(selectedUserId))?.username;
     return quizzes.filter(q => q.publisher_username === hostUsername);
   }, [quizzes, selectedUserId, users]);
-
   if (loading) {
     return <div>Loading admin panel...</div>;
   }
@@ -121,7 +115,6 @@ export default function AdminPage() {
                     >
                       <option value="player">Player</option>
                       <option value="host">Host</option>
-                      <option value="admin">Admin</option>
                     </select>
                   </td>
                   <td>

@@ -9,25 +9,42 @@ from ..models import Quiz, LobbyRoom, LobbyParticipant
 from ..permissions import IsAdminUser
 from ..serializers import QuizAdminSerializer
 from ..signals import participant_deleted
+from accounts.models import UserProfile
 
 
 class AdminUserListView(generics.ListAPIView):
     """
     Admin endpoint to list all users with their roles.
+    Admins can only see non-admin users.
     """
-    queryset = User.objects.select_related("profile").all()
     serializer_class = UserAdminSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        # Exclude other admins and the current user
+        return User.objects.exclude(
+            profile__role=UserProfile.Role.ADMIN
+        ).exclude(
+            id=self.request.user.id
+        ).select_related("profile")
 
 
 class AdminUserDetailView(generics.RetrieveUpdateAPIView):
     """
     Admin endpoint to update a user's role or active status.
+    Admins can only modify non-admin users.
     """
-    queryset = User.objects.all()
     serializer_class = UserAdminSerializer
     permission_classes = [permissions.IsAuthenticated, IsAdminUser]
     lookup_field = 'pk'
+
+    def get_queryset(self):
+        # Exclude other admins and the current user from being modifiable
+        return User.objects.exclude(
+            profile__role=UserProfile.Role.ADMIN
+        ).exclude(
+            id=self.request.user.id
+        )
 
 
 class AdminQuizListView(generics.ListAPIView):
