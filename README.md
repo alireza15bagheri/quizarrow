@@ -157,7 +157,3 @@ Contributions are welcome! If you have suggestions for improving the project, pl
     Push to the Branch (git push origin feature/AmazingFeature)
 
     Open a Pull Request
-
-📜 License
-
-This project is licensed under the MIT License. See the LICENSE file for more details.
