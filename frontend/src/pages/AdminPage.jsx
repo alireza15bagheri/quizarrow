@@ -136,7 +136,7 @@ export default function AdminPage() {
       <section>
         <h2 className="text-2xl font-semibold mb-4">Quiz Management</h2>
         <div className="form-control mb-4">
-          <label className="label">
+          <label className="label mr-5">
             <span className="label-text">Filter by Host</span>
           </label>
           <select
