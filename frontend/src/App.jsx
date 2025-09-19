@@ -13,6 +13,7 @@ import ParticipationHistoryPage from './pages/ParticipationHistoryPage'
 import QuizResultPage from './pages/QuizResultPage'
 import { NotificationProvider } from './context/NotificationContext'
 import { ConfirmationProvider } from './context/ConfirmationContext'
+import { WebSocketProvider } from './context/WebSocketContext'
 import AdminPage from './pages/AdminPage'
 
 function ProtectedRoute({ children, allowedRoles }) {
@@ -53,115 +54,117 @@ export default function App() {
     <AuthProvider>
       <NotificationProvider>
         <ConfirmationProvider>
-          <Routes>
-            <Route
-              path="/login"
-              element={
-                <RedirectIfAuthed>
-                  <LoginPage />
-                </RedirectIfAuthed>
-              }
-            />
-            <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <DashboardPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/lobby"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <LobbyPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quizzes/new"
-              element={
-                <ProtectedRoute allowedRoles={['host', 'admin']}>
-                  <AppLayout>
-                    <CreateQuizPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quizzes/mine"
-              element={
-                <ProtectedRoute allowedRoles={['host', 'admin']}>
-                  <AppLayout>
-                    <MyQuizzesPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quizzes/:id/edit"
-              element={
-                <ProtectedRoute allowedRoles={['host', 'admin']}>
-                  <AppLayout>
-                    <EditQuizQuestionsPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/sessions"
-              element={
-                <ProtectedRoute allowedRoles={['host', 'admin']}>
-                  <AppLayout>
-                    <MySessionsPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quiz/take/:lobbyId"
-              element={
-                <ProtectedRoute>
-                  <QuizTakingPage />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/history"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <ParticipationHistoryPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/quiz/results/:participationId"
-              element={
-                <ProtectedRoute>
-                  <AppLayout>
-                    <QuizResultPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute allowedRoles={['admin']}>
-                  <AppLayout>
-                    <AdminPage />
-                  </AppLayout>
-                </ProtectedRoute>
-              }
-            />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+          <WebSocketProvider>
+            <Routes>
+              <Route
+                path="/login"
+                element={
+                  <RedirectIfAuthed>
+                    <LoginPage />
+                  </RedirectIfAuthed>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <DashboardPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/lobby"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <LobbyPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quizzes/new"
+                element={
+                  <ProtectedRoute allowedRoles={['host', 'admin']}>
+                    <AppLayout>
+                      <CreateQuizPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quizzes/mine"
+                element={
+                  <ProtectedRoute allowedRoles={['host', 'admin']}>
+                    <AppLayout>
+                      <MyQuizzesPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quizzes/:id/edit"
+                element={
+                  <ProtectedRoute allowedRoles={['host', 'admin']}>
+                    <AppLayout>
+                      <EditQuizQuestionsPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sessions"
+                element={
+                  <ProtectedRoute allowedRoles={['host', 'admin']}>
+                    <AppLayout>
+                      <MySessionsPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quiz/take/:lobbyId"
+                element={
+                  <ProtectedRoute>
+                    <QuizTakingPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/history"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ParticipationHistoryPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quiz/results/:participationId"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <QuizResultPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={['admin']}>
+                    <AppLayout>
+                      <AdminPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </WebSocketProvider>
         </ConfirmationProvider>
       </NotificationProvider>
     </AuthProvider>

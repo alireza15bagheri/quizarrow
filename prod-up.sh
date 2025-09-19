@@ -18,11 +18,11 @@ fi
 [ -f "${COMPOSE_FILE}" ] || die "Missing ${COMPOSE_FILE} in repo root."
 
 if [ ! -f "${ENV_FILE}" ]; then
-  if [ -f ".env.prod.example" ]; then
-    info "No ${ENV_FILE} found. Using .env.prod.example (values may need adjustment)."
-    ENV_FILE=".env.prod.example"
+  if [ -f ".env.prod-sample" ]; then
+    info "No ${ENV_FILE} found. Using .env.prod-sample (values may need adjustment)."
+    ENV_FILE=".env.prod-sample"
   else
-    die "Missing ${ENV_FILE}. Create it from .env.prod.example."
+    die "Missing ${ENV_FILE}. Create it from .env.prod-sample."
   fi
 fi
 
@@ -75,7 +75,6 @@ case "${cmd}" in
     echo "- App via Nginx: http://<your-server-ip>/ (configure DNS/ALLOWED_HOSTS for domain)"
     echo "- API base: http://<your-domain-or-ip>/api/"
     ;;
-
   update)
     info "Pulling images and updating stack..."
     dc pull
@@ -118,11 +117,9 @@ case "${cmd}" in
     info "Tailing logs (Ctrl+C to stop)..."
     dc logs -f nginx backend db
     ;;
-
   ps|status)
     dc ps
     ;;
-
   migrate)
     info "Running Django migrations..."
     dc exec backend python manage.py migrate --noinput
@@ -139,13 +136,11 @@ case "${cmd}" in
     info "Creating Django superuser (interactive)..."
     dc exec backend python manage.py createsuperuser
     ;;
-
   shell)
     info "Opening shell in backend (type 'exit' to leave)..."
     # Use sh because image is slim; bash may not be present.
     dc exec backend sh
     ;;
-
   restart)
     info "Restarting services..."
     dc restart backend nginx
@@ -161,7 +156,6 @@ case "${cmd}" in
   -h|--help|help)
     usage
     ;;
-
   *)
     usage
     exit 1

@@ -6,8 +6,12 @@ from rest_framework.exceptions import PermissionDenied, ValidationError
 from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 
+# Imports for channels broadcast
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
+
 from ..models import Quiz, QuizQuestion, Question
-from ..serializers import QuizAdminSerializer, QuizQuestionAdminSerializer
+from ..serializers import QuizAdminSerializer, QuizQuestionAdminSerializer, QuizLobbySerializer
 from ..permissions import IsHostOrAdmin
 
 
@@ -152,7 +156,23 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
 
                 quiz.publish_date = timezone.now()
 
-        return super().update(request, *args, **kwargs)
+        response = super().update(request, *args, **kwargs)
+
+        # If the update was successful and the quiz is now published, broadcast it.
+        if response.status_code == 200 and quiz.is_published:
+            channel_layer = get_channel_layer()
+            if channel_layer:
+                # Use the lobby serializer for a public-friendly payload
+                payload = QuizLobbySerializer(quiz).data
+                async_to_sync(channel_layer.group_send)(
+                    "quiz_notifications",
+                    {
+                        "type": "quiz.published",
+                        "payload": payload
+                    }
+                )
+
+        return response
 
 
 class QuizQuestionDeleteView(QuizEditPermissionMixin, APIView):

@@ -11,6 +11,10 @@ services:
     volumes:
       - db_data:/var/lib/postgresql/data
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
   backend:
     build:
       context: .
@@ -21,14 +25,15 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: "5432"
+      REDIS_HOST: redis # <-- Point to the redis service
       DEBUG: "0"
       DJANGO_COLLECTSTATIC: "1"
-      GUNICORN_WORKERS: ${GUNICORN_WORKERS:-3}
       # --- ADDED FOR PROXY SUPPORT ---
       USE_X_FORWARDED_HOST: "1"
       SECURE_PROXY_SSL_HEADER: "HTTP_X_FORWARDED_PROTO,https"
     depends_on:
       - db
+      - redis # <-- Add dependency
     volumes:
       - static_volume:/app/staticfiles
       - media_volume:/app/media

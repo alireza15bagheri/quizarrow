@@ -28,6 +28,7 @@ ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 # --- Application definition ---
 
 INSTALLED_APPS = [
+    'daphne', # Add daphne for ASGI server
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -38,6 +39,7 @@ INSTALLED_APPS = [
     # Third-party apps
     'rest_framework',
     'corsheaders',
+    'channels', # Add channels for WebSocket support
 
     # Local apps
     'accounts.apps.AccountsConfig',
@@ -73,6 +75,19 @@ TEMPLATES = [
     },
 ]
 
+# --- ASGI & Channels ---
+ASGI_APPLICATION = 'config.asgi.application'
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            # Use REDIS_HOST from env, defaulting to 'redis' for Docker networking
+            "hosts": [(env('REDIS_HOST', default='redis'), 6379)],
+        },
+    },
+}
+
+
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
@@ -104,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 
 # --- Internationalization ---
-# https://docs.djangoproject.com/en/5.0/topics/i18n/
+# https://docs.djangoproject.com/en/5.0/topics/i1n/
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
@@ -137,9 +152,9 @@ CORS_ALLOW_CREDENTIALS = True
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS')
 CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = False  # Allow JS to read it
-CSRF_COOKIE_SECURE = False # Use True in production
+CSRF_COOKIE_SECURE = env.bool('CSRF_COOKIE_SECURE', default=False)
 SESSION_COOKIE_SAMESITE = 'Lax'
-SESSION_COOKIE_SECURE = False # Use True in production
+SESSION_COOKIE_SECURE = env.bool('SESSION_COOKIE_SECURE', default=False)
 SESSION_COOKIE_NAME = 'quizarrow_sessionid'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
 
@@ -156,3 +171,8 @@ REST_FRAMEWORK = {
 
 # --- CSRF Failure View ---
 CSRF_FAILURE_VIEW = 'accounts.views.csrf_failure_view'
+
+# --- Proxy Settings ---
+# Read proxy-related environment variables for production
+USE_X_FORWARDED_HOST = env.bool('USE_X_FORWARDED_HOST', default=False)
+SECURE_PROXY_SSL_HEADER = env.tuple('SECURE_PROXY_SSL_HEADER', default=None)

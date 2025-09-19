@@ -6,12 +6,18 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${DB_NAME:-quizarrow}
-      POSTGRES_USER: ${DB_USER:-quizarrow}
+      POSTGUSER: ${DB_USER:-quizarrow}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-quizarrow}
     volumes:
       - db_data_dev:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  redis: # <-- ADD THIS NEW SERVICE
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
 
   backend:
     build:
@@ -36,11 +42,11 @@ services:
       DJANGO_COLLECTSTATIC: "0"
     depends_on:
       - db
+      - redis # <-- ADD THIS DEPENDENCY
     volumes:
       - ./backend:/app
       - static_dev:/app/staticfiles
       - media_dev:/app/media
-    command: sh -c "python manage.py runserver 0.0.0.0:8000"
     ports:
       - "8000:8000"
     develop:

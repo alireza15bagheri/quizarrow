@@ -38,16 +38,11 @@ main() {
   fi
 
   if [ "${DEBUG_LC}" = "1" ] || [ "${DEBUG_LC}" = "true" ]; then
-    echo "Starting Django development server..."
-    exec python manage.py runserver 0.0.0.0:8000
+    echo "Starting Daphne ASGI development server..."
+    exec daphne -b 0.0.0.0 -p 8000 config.asgi:application
   else
-    echo "Starting Gunicorn..."
-    WORKERS="${GUNICORN_WORKERS:-3}"
-    exec gunicorn config.wsgi:application \
-      --workers "${WORKERS}" \
-      --bind 0.0.0.0:8000 \
-      --access-logfile '-' \
-      --error-logfile '-'
+    echo "Starting Daphne ASGI production server..."
+    exec daphne -b 0.0.0.0 -p 8000 config.asgi:application
   fi
 }
 
