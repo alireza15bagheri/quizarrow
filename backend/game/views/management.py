@@ -72,7 +72,7 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
             )
 
         try:
-            # The destroy method calls perform_destroy, which calls instance.delete()
+          # The destroy method calls perform_destroy, which calls instance.delete()
             self.destroy(request, *args, **kwargs)
             # destroy returns a 204 No Content response on success
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -136,39 +136,47 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         quiz = self.get_object()
-        # Only allow editing if not published, except for toggling is_published itself
-        # and updating available_to_date.
-        if quiz.is_published:
+        was_published_before_update = quiz.is_published
+
+        # Only allow editing some fields on a published quiz
+        if was_published_before_update:
             allowed_fields = {"is_published", "available_to_date"}
             update_fields = set(request.data.keys())
             if not update_fields.issubset(allowed_fields):
-                raise ValidationError("This quiz is published and cannot be edited.")
+                raise ValidationError("This quiz is published and cannot be fully edited.")
 
-        # If transitioning from draft -> published, check for questions and set publish_date
+        is_publishing_now = False
         if "is_published" in request.data:
             next_published = bool(request.data.get("is_published"))
-            if next_published and not quiz.is_published:
-                # Prevent publishing a quiz with no questions
-                if not quiz.quiz_questions.exists():
-                    raise ValidationError(
-                        "A quiz must have at least one question to be published."
-                    )
 
+            # --- State transition logic ---
+            if next_published and not was_published_before_update:
+                # This is a PUBLISH action
+                is_publishing_now = True
+                if not quiz.quiz_questions.exists():
+                    raise ValidationError("A quiz must have at least one question to be published.")
+                # Always set/update the publish_date when transitioning to published
                 quiz.publish_date = timezone.now()
+
+            elif not next_published and was_published_before_update:
+                # This is an UNPUBLISH action
+                # Clear related dates to ensure a clean state for future publishing
+                quiz.publish_date = None
+                quiz.available_to_date = None
 
         response = super().update(request, *args, **kwargs)
 
-        # If the update was successful and the quiz is now published, broadcast it.
-        if response.status_code == 200 and quiz.is_published:
+        # If the update was successful and the quiz just became published, broadcast it.
+        if response.status_code == 200 and is_publishing_now:
+            # The quiz instance is updated by super().update(), so it's safe to serialize
             channel_layer = get_channel_layer()
             if channel_layer:
-                # Use the lobby serializer for a public-friendly payload
                 payload = QuizLobbySerializer(quiz).data
                 async_to_sync(channel_layer.group_send)(
-                    "quiz_notifications",
+                   "quiz_notifications",
                     {
                         "type": "quiz.published",
-                        "payload": payload
+                        "payload": payload,
                     }
                 )
 

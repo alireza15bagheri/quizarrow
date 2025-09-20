@@ -58,7 +58,7 @@ export function WebSocketProvider({ children }) {
             console.log('WebSocket disconnected. Attempting to reconnect...')
         }
         socketRef.current = null
-        // Simple reconnection logic will be handled by this effect re-running
+        // Simple reconnection logic will be handled by this effect re-running if user/loading changes
       }
 
       ws.onerror = (err) => {
@@ -74,7 +74,9 @@ export function WebSocketProvider({ children }) {
         socketRef.current = null
       }
     }
-  }, [user, loading, notify]) // <-- Re-run effect if user or loading state changes
+    // The connection lifecycle MUST only depend on the user's auth status.
+    // Including unstable objects like `notify` was causing an infinite loop.
+  }, [user, loading]) // <-- CORRECTED: Only `user` and `loading` are dependencies.
 
   return (
     <WebSocketContext.Provider value={null}>

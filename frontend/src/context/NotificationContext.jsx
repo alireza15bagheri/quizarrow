@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback } from 'react'
+import { createContext, useContext, useState, useCallback, useMemo } from 'react'
 
 const NotificationContext = createContext(null)
 
@@ -22,11 +22,13 @@ export function NotificationProvider({ children }) {
     [removeNotification]
   )
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  // that don't depend on the `notifications` array itself.
+  const value = useMemo(() => ({
     addNotification,
     removeNotification,
     notifications,
-  }
+  }), [addNotification, removeNotification, notifications]);
 
   return (
     <NotificationContext.Provider value={value}>
@@ -41,15 +43,19 @@ export function useNotifier() {
     throw new Error('useNotifier must be used within a NotificationProvider')
   }
 
+  // Memoize the `notify` object to ensure it is stable across re-renders.
+  const notify = useMemo(() => ({
+    success: (message, duration) =>
+      ctx.addNotification(message, 'success', duration),
+    error: (message, duration) =>
+      ctx.addNotification(message, 'error', duration),
+    info: (message, duration) =>
+      ctx.addNotification(message, 'info', duration),
+  }), [ctx.addNotification]);
+
+
   return {
-    notify: {
-      success: (message, duration) =>
-        ctx.addNotification(message, 'success', duration),
-      error: (message, duration) =>
-        ctx.addNotification(message, 'error', duration),
-      info: (message, duration) =>
-        ctx.addNotification(message, 'info', duration),
-    },
+    notify,
     removeNotification: ctx.removeNotification,
     notifications: ctx.notifications,
   }

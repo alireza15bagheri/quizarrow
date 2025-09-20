@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react'
+import { createContext, useContext, useEffect, useState, useMemo, useCallback } from 'react'
 import * as authApi from '../lib/api/auth'
 
 const AuthContext = createContext(null)
@@ -24,19 +24,27 @@ export function AuthProvider({ children }) {
     }
   }, [])
 
-  const login = async (username, password) => {
+  const login = useCallback(async (username, password) => {
     const user = await authApi.login(username, password)
     setUser(user)
     return user
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authApi.logout()
     setUser(null)
-  }
+  }, [])
+
+  // Memoize the context value to prevent unnecessary re-renders of consumers
+  const value = useMemo(() => ({
+    user,
+    loading,
+    login,
+    logout
+  }), [user, loading, login, logout])
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
