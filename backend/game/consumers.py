@@ -25,8 +25,15 @@ class NotificationConsumer(AsyncWebsocketConsumer):
     # Handler for messages sent to the group
     async def quiz_published(self, event):
         """
-        Forwards a 'quiz.published' event from the channel layer to the client.
+        Forwards a 'quiz.published' event from the channel layer to the client,
+        but filters out the original publisher to prevent duplicate notifications.
         """
+        publisher_id = event.get("publisher_id")
+
+        # Do not send the notification to the user who published the quiz
+        if self.scope["user"].id == publisher_id:
+            return
+            
         # Send a message down to the WebSocket
         await self.send(text_data=json.dumps({
             'type': 'quiz.published',

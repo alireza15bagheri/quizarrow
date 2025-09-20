@@ -28,7 +28,7 @@ class QuizEditPermissionMixin:
         if quiz.host != self.request.user:
             raise PermissionDenied("You do not have permission to edit this quiz.")
         if quiz.is_published and not allow_published:
-            raise ValidationError("This quiz is published and cannot be modified.")
+           raise ValidationError("This quiz is published and cannot be modified.")
         return quiz
 
 
@@ -108,7 +108,7 @@ class QuizQuestionAddView(QuizEditPermissionMixin, generics.CreateAPIView):
             question_data = link.pop("question", None)
             if question_data:
                 question = Question.objects.create(
-                    author=request.user, **question_data
+                   author=request.user, **question_data
                 )
                 link["question"] = question
 
@@ -176,6 +176,7 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
                    "quiz_notifications",
                     {
                         "type": "quiz.published",
+                        "publisher_id": request.user.id, # Add the publisher's ID
                         "payload": payload,
                     }
                 )
