@@ -36,7 +36,7 @@ export default function NotificationContainer() {
   }
 
   return (
-    <div className="toast toast-top toast-end z-[100]">
+    <div className="toast toast-bottom toast-start z-[100]">
       {notifications.map((n) => (
         <Notification
           key={n.id}
