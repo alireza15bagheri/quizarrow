@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import ThemeSwitcher from '../components/ThemeSwitcher'
 
 export default function LoginPage() {
   const { login } = useAuth()
@@ -43,54 +42,53 @@ export default function LoginPage() {
           <div className="card-body">
             <form onSubmit={onSubmit} className="space-y-4">
               <div className="form-control">
-                <label className="label mr-2">
+                               <label className="label mr-2">
                   <span className="label-text">Username</span>
                 </label>
                 <input
                   type="text"
-                  className="input input-bordered"
+                   className="input input-bordered"
                   // placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   required
                   autoFocus
-                />
+                 />
               </div>
 
               <div className="form-control">
                 <label className="label mr-3">
                   <span className="label-text">Password</span>
                 </label>
-                <input
+                             <input
                   type="password"
                   className="input input-bordered"
                   // placeholder="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
 
               {error && (
                 <div className="alert alert-error">
-                  <span>{error}</span>
+                   <span>{error}</span>
                 </div>
               )}
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center justify-center gap-4 pt-2">
                 <button
                   type="submit"
-                  className={`btn btn-primary flex-grow ${loading ? 'btn-disabled' : ''}`}
+                   className={`btn btn-primary w-full max-w-xs ${loading ? 'btn-disabled' : ''}`}
                 >
                   {loading ? 'Signing in…' : 'Sign in'}
                 </button>
-                <ThemeSwitcher />
               </div>
             </form>
           </div>
         </div>
 
         <p className="text-center text-sm text-base-content/60 mt-4">
-          Don’t have an account yet? Create via Django admin for now.
+           Don’t have an account yet? Create via Django admin for now.
         </p>
         
       </div>

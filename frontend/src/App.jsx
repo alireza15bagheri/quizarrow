@@ -15,13 +15,14 @@ import { NotificationProvider } from './context/NotificationContext'
 import { ConfirmationProvider } from './context/ConfirmationContext'
 import { WebSocketProvider } from './context/WebSocketContext'
 import AdminPage from './pages/AdminPage'
+import SettingsPage from './pages/SettingsPage'
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <span className="loading loading-spinner loading-lg" />
+         <span className="loading loading-spinner loading-lg" />
       </div>
     )
   }
@@ -53,6 +54,7 @@ export default function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
+        
         <ConfirmationProvider>
           <WebSocketProvider>
             <Routes>
@@ -60,17 +62,18 @@ export default function App() {
                 path="/login"
                 element={
                   <RedirectIfAuthed>
-                    <LoginPage />
+                     <LoginPage />
                   </RedirectIfAuthed>
                 }
               />
               <Route
                 path="/dashboard"
-                element={
+                 element={
                   <ProtectedRoute>
                     <AppLayout>
                       <DashboardPage />
                     </AppLayout>
+                  
                   </ProtectedRoute>
                 }
               />
@@ -78,35 +81,35 @@ export default function App() {
                 path="/lobby"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
+                                 <AppLayout>
                       <LobbyPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
-              />
+               />
               <Route
                 path="/quizzes/new"
                 element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
-                      <CreateQuizPage />
+                       <CreateQuizPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/quizzes/mine"
+                 path="/quizzes/mine"
                 element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
                       <MyQuizzesPage />
-                    </AppLayout>
+                     </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
                 path="/quizzes/:id/edit"
-                element={
+                 element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
                       <EditQuizQuestionsPage />
@@ -117,36 +120,38 @@ export default function App() {
               <Route
                 path="/sessions"
                 element={
+                  
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
                       <MySessionsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
-              />
+               />
               <Route
                 path="/quiz/take/:lobbyId"
                 element={
                   <ProtectedRoute>
                     <QuizTakingPage />
-                  </ProtectedRoute>
+                   </ProtectedRoute>
                 }
               />
               <Route
                 path="/history"
                 element={
-                  <ProtectedRoute>
+                  
+                   <ProtectedRoute>
                     <AppLayout>
                       <ParticipationHistoryPage />
                     </AppLayout>
                   </ProtectedRoute>
-                }
+                 }
               />
               <Route
                 path="/quiz/results/:participationId"
                 element={
                   <ProtectedRoute>
-                    <AppLayout>
+                     <AppLayout>
                       <QuizResultPage />
                     </AppLayout>
                   </ProtectedRoute>
@@ -157,7 +162,17 @@ export default function App() {
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AppLayout>
-                      <AdminPage />
+                       <AdminPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <SettingsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }

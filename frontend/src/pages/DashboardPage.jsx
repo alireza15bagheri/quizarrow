@@ -28,12 +28,19 @@ function Icon({ name, className = 'w-8 h-8' }) {
         <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"/>
         </svg>
-      )
+     )
     case 'admin':
       return (
         <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-8h4v4h-4zm0-6h4v4h-4z"/>
         </svg>
+      )
+    case 'settings':
+      return (
+        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 00.12-.64l-1.92-3.32a.5.5 0 00-.61-.22l-2.39.96a7.007 7.007 0 00-1.63-.94l-.36-2.54A.5.5 0 0014.3 2h-4.6a.5.5 0 00-.5.42l-.36 2.54c-.59.24-1.13.55-1.63.94l-2.39-.96a.5.5 0 00-.61.22L2.69 8.48a.5.5 0 00.12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 00-.12.64l1.92 3.32c.14.24.43.34.7.22l2.39-.96c.5.39 1.04.7 1.63.94l.36 2.54c.04.26.25.42.5.42h4.6c.25 0 .46-.16.5-.42l.36-2.54c.59-.24 1.13-.55 1.63-.94l2.39.96c.27.12.56.02.7-.22l1.92-3.32a.5.5 0 00-.12-.64l-2.03-1.58zM12 15.5A3.5 3.5 0 1112 8a3.5 3.5 0 010 7.5z"/>
+        </svg>
+
       )
     default:
       return null
@@ -87,6 +94,16 @@ export default function DashboardPage() {
       roles: ['player', 'host', 'admin'],
     },
     {
+      title: 'Settings',
+      description: 'Manage your account and application preferences.',
+      buttonText: 'Go to Settings',
+      path: '/settings',
+      icon: 'settings',
+      accentClass: 'bg-neutral',
+      buttonClass: 'btn-neutral',
+      roles: ['player', 'host', 'admin'],
+    },
+    {
       title: 'Admin Panel',
       description: 'Manage users, roles, and moderate content across the platform.',
       buttonText: 'Go to Panel',
@@ -111,7 +128,7 @@ export default function DashboardPage() {
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+       <div className="grid gap-6 md:grid-cols-2">
         {visibleCards.map((card) => (
           <div
             key={card.title}
