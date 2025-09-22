@@ -2,34 +2,17 @@ from django.db.models import ProtectedError
 from django.utils import timezone
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from rest_framework.exceptions import PermissionDenied, ValidationError
+from rest_framework.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
 
 # Imports for channels broadcast
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
-from ..models import Quiz, QuizQuestion, Question
-from ..serializers import QuizAdminSerializer, QuizQuestionAdminSerializer, QuizLobbySerializer
+from ..models import Quiz
+from ..serializers import QuizAdminSerializer, QuizLobbySerializer
 from ..permissions import IsHostOrAdmin
-
-
-class QuizEditPermissionMixin:
-    """
-    Mixin to centralize common quiz ownership and publish-state checks.
-    Provides `get_owned_quiz_or_403` to retrieve a quiz and enforce:
-      - Current user is the host
-      - Quiz is not published (unless allow_published=True)
-    """
-
-    def get_owned_quiz_or_403(self, quiz_id, *, allow_published=False):
-        quiz = get_object_or_404(Quiz, pk=quiz_id)
-        if quiz.host != self.request.user:
-            raise PermissionDenied("You do not have permission to edit this quiz.")
-        if quiz.is_published and not allow_published:
-           raise ValidationError("This quiz is published and cannot be modified.")
-        return quiz
+from .mixins import QuizEditPermissionMixin
 
 
 class HostNewQuizView(generics.CreateAPIView):
@@ -72,7 +55,7 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
             )
 
         try:
-          # The destroy method calls perform_destroy, which calls instance.delete()
+            # The destroy method calls perform_destroy, which calls instance.delete()
             self.destroy(request, *args, **kwargs)
             # destroy returns a 204 No Content response on success
             return Response(status=status.HTTP_204_NO_CONTENT)
@@ -83,41 +66,6 @@ class MyQuizzesListDeleteView(generics.ListAPIView, generics.DestroyAPIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST,
             )
-
-
-class QuizQuestionAddView(QuizEditPermissionMixin, generics.CreateAPIView):
-    """
-    Allows the quiz owner to append new questions to an existing quiz.
-    Accepts the same `quiz_questions` format as QuizAdminSerializer.
-    """
-
-    serializer_class = QuizQuestionAdminSerializer
-    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
-
-    def create(self, request, *args, **kwargs):
-        quiz = self.get_owned_quiz_or_403(kwargs["pk"], allow_published=False)
-
-        # Expecting a payload like {"quiz_questions": [ {...}, {...} ]}
-        quiz_questions_data = request.data.get("quiz_questions", [])
-        if not isinstance(quiz_questions_data, list):
-            return Response({"error": "quiz_questions must be a list"}, status=400)
-
-        created_links = []
-        for link in quiz_questions_data:
-            # If `question` key is present: create a new Question object
-            question_data = link.pop("question", None)
-            if question_data:
-                question = Question.objects.create(
-                   author=request.user, **question_data
-                )
-                link["question"] = question
-
-            # Associate with quiz
-            qlink = QuizQuestion.objects.create(quiz=quiz, **link)
-            created_links.append(qlink)
-
-        serializer = QuizQuestionAdminSerializer(created_links, many=True)
-        return Response(serializer.data, status=201)
 
 
 class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
@@ -173,7 +121,7 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
             if channel_layer:
                 payload = QuizLobbySerializer(quiz).data
                 async_to_sync(channel_layer.group_send)(
-                   "quiz_notifications",
+                    "quiz_notifications",
                     {
                         "type": "quiz.published",
                         "publisher_id": request.user.id, # Add the publisher's ID
@@ -182,37 +130,3 @@ class MyQuizDetailView(QuizEditPermissionMixin, generics.RetrieveUpdateAPIView):
                 )
 
         return response
-
-
-class QuizQuestionDeleteView(QuizEditPermissionMixin, APIView):
-    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
-
-    def delete(self, request, pk, qid):
-        """
-        Delete a specific question from a quiz (by quiz id and quiz_question id).
-        """
-        quiz = self.get_owned_quiz_or_403(pk, allow_published=False)
-        quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
-        quiz_question.delete()
-        return Response(
-            {"ok": True, "detail": "Question removed"}, status=status.HTTP_204_NO_CONTENT
-        )
-
-
-class QuizQuestionUpdateView(QuizEditPermissionMixin, APIView):
-    """
-    Partially update a quiz question link (points, timer_seconds).
-    Sending null resets to the Question defaults (effective_* fields).
-    """
-
-    permission_classes = [permissions.IsAuthenticated, IsHostOrAdmin]
-
-    def patch(self, request, pk, qid):
-        quiz = self.get_owned_quiz_or_403(pk, allow_published=False)
-        quiz_question = get_object_or_404(QuizQuestion, pk=qid, quiz=quiz)
-        serializer = QuizQuestionAdminSerializer(
-            quiz_question, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)

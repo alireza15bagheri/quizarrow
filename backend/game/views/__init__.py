@@ -4,11 +4,13 @@ Aggregate and re-export all game views so existing imports like
 after splitting views into domain-specific modules.
 """
 
-from .management import (
+from .quiz_views import (
     HostNewQuizView,
     MyQuizzesListDeleteView,
-    QuizQuestionAddView,
     MyQuizDetailView,
+)
+from .question_views import (
+    QuizQuestionAddView,
     QuizQuestionDeleteView,
     QuizQuestionUpdateView,
 )
