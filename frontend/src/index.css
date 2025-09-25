@@ -1,11 +1,13 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: autumn --default, dark --prefersdark, dracula;
+  themes: autumn --default, dark --prefersdark, dracula, light, cupcake, bumblebee, emerald, corporate, synthwave, retro, cyberpunk, valentine, halloween, garden, forest, aqua, lofi, pastel, wireframe, black, luxury, cmyk, business;
 }
 
 
 /* Your custom CSS below */
-html, body, #root {
+html,
+body,
+#root {
   height: 100%;
 }
 

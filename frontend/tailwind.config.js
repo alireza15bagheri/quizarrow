@@ -8,8 +8,31 @@ export default {
   },
   plugins: [daisyui],
   daisyui: {
-    themes: ["dracula", "autumn"]
+    themes: [
+        "light",
+        "dark",
+        "cupcake",
+        "bumblebee",
+        "emerald",
+        "corporate",
+        "synthwave",
+        "retro",
+        "cyberpunk",
+        "valentine",
+        "halloween",
+        "garden",
+        "forest",
+        "aqua",
+        "lofi",
+        "pastel",
+        "wireframe",
+        "black",
+        "luxury",
+        "dracula",
+        "cmyk",
+        "autumn",
+        "business",
+    ]
     
   },
 }
-

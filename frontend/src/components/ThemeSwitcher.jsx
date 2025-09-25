@@ -1,6 +1,30 @@
 import { useEffect, useState } from 'react'
 
-const THEMES = ['autumn', 'dracula']
+const THEMES = [
+    'light',
+    'dark',
+    'cupcake',
+    'bumblebee',
+    'emerald',
+    'corporate',
+    'synthwave',
+    'retro',
+    'cyberpunk',
+    'valentine',
+    'halloween',
+    'garden',
+    'forest',
+    'aqua',
+    'lofi',
+    'pastel',
+    'wireframe',
+    'black',
+    'luxury',
+    'dracula',
+    'cmyk',
+    'autumn',
+    'business',
+]
 
 export default function ThemeSwitcher() {
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'dracula')
