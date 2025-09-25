@@ -16,6 +16,7 @@ import { ConfirmationProvider } from './context/ConfirmationContext'
 import { WebSocketProvider } from './context/WebSocketContext'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
+import ChatroomsPage from './pages/ChatroomsPage'
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
@@ -62,13 +63,13 @@ export default function App() {
                 path="/login"
                 element={
                   <RedirectIfAuthed>
-                     <LoginPage />
+                    <LoginPage />
                   </RedirectIfAuthed>
                 }
               />
               <Route
                 path="/dashboard"
-                 element={
+                element={
                   <ProtectedRoute>
                     <AppLayout>
                       <DashboardPage />
@@ -90,7 +91,7 @@ export default function App() {
               <Route
                 path="/quizzes/new"
                 element={
-                  <ProtectedRoute allowedRoles={['host', 'admin']}>
+                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
                        <CreateQuizPage />
                     </AppLayout>
@@ -112,7 +113,7 @@ export default function App() {
                  element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
-                      <EditQuizQuestionsPage />
+                       <EditQuizQuestionsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
@@ -123,7 +124,7 @@ export default function App() {
                   
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
-                      <MySessionsPage />
+                       <MySessionsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
@@ -141,24 +142,34 @@ export default function App() {
                 element={
                   
                    <ProtectedRoute>
-                    <AppLayout>
+                     <AppLayout>
                       <ParticipationHistoryPage />
                     </AppLayout>
                   </ProtectedRoute>
                  }
+               />
+              <Route
+                path="/chatrooms"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ChatroomsPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
               />
               <Route
                 path="/quiz/results/:participationId"
                 element={
                   <ProtectedRoute>
                      <AppLayout>
-                      <QuizResultPage />
+                       <QuizResultPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/admin"
+                 path="/admin"
                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AppLayout>
@@ -174,7 +185,7 @@ export default function App() {
                     <AppLayout>
                       <SettingsPage />
                     </AppLayout>
-                  </ProtectedRoute>
+                   </ProtectedRoute>
                 }
               />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
