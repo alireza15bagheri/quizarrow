@@ -1,9 +1,9 @@
 import { useAuth } from '../context/AuthContext';
 import ThemeSwitcher from '../components/ThemeSwitcher';
+import NotificationDelaySelector from '../components/NotificationDelaySelector';
 
 export default function SettingsPage() {
   const { user } = useAuth();
-
   return (
     <div className="max-w-xl mx-auto">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
@@ -36,6 +36,19 @@ export default function SettingsPage() {
               Change the application&apos;s color scheme.
             </p>
             <ThemeSwitcher />
+          </div>
+        </section>
+
+        {/* Notifications Section */}
+        <section>
+          <h2 className="text-xl font-semibold border-b border-base-300 pb-2 mb-4">
+            Notifications
+          </h2>
+          <div className="flex justify-between items-center">
+            <p className="text-base-content/70">
+              Set a cooldown period between notifications.
+            </p>
+            <NotificationDelaySelector />
           </div>
         </section>
       </div>
