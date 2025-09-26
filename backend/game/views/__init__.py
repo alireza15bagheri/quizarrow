@@ -33,6 +33,12 @@ from .admin_views import (
 from .tags_view import (
     TagListView,
 )
+from .chat_views import (
+    ChatRoomListCreateView,
+    ChatMessageListView,
+    ChatRoomDestroyView,
+    ChatRoomRetrieveView,
+)
 
 
 __all__ = [
@@ -58,4 +64,9 @@ __all__ = [
     "AdminQuizDetailView",
     # Tags
     "TagListView",
+    # Chat
+    "ChatRoomListCreateView",
+    "ChatMessageListView",
+    "ChatRoomDestroyView",
+    "ChatRoomRetrieveView",
 ]

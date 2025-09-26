@@ -17,6 +17,7 @@ import { WebSocketProvider } from './context/WebSocketContext'
 import AdminPage from './pages/AdminPage'
 import SettingsPage from './pages/SettingsPage'
 import ChatroomsPage from './pages/ChatroomsPage'
+import ChatRoomPage from './pages/ChatRoomPage'
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user, loading } = useAuth()
@@ -56,6 +57,7 @@ export default function App() {
     <AuthProvider>
       <NotificationProvider>
         
+        
         <ConfirmationProvider>
           <WebSocketProvider>
             <Routes>
@@ -69,7 +71,7 @@ export default function App() {
               />
               <Route
                 path="/dashboard"
-                element={
+                 element={
                   <ProtectedRoute>
                     <AppLayout>
                       <DashboardPage />
@@ -80,113 +82,142 @@ export default function App() {
               />
               <Route
                 path="/lobby"
-                element={
+                
+                 element={
                   <ProtectedRoute>
                                  <AppLayout>
                       <LobbyPage />
                     </AppLayout>
+    
                   </ProtectedRoute>
                 }
                />
               <Route
                 path="/quizzes/new"
                 element={
-                   <ProtectedRoute allowedRoles={['host', 'admin']}>
+                  
+                  <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
                        <CreateQuizPage />
                     </AppLayout>
                   </ProtectedRoute>
-                }
+      
+                 }
               />
               <Route
                  path="/quizzes/mine"
                 element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
-                    <AppLayout>
+                     <AppLayout>
                       <MyQuizzesPage />
                      </AppLayout>
                   </ProtectedRoute>
                 }
-              />
+           
+               />
               <Route
                 path="/quizzes/:id/edit"
                  element={
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
+          
                        <EditQuizQuestionsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/sessions"
+    
+                 path="/sessions"
                 element={
                   
                   <ProtectedRoute allowedRoles={['host', 'admin']}>
                     <AppLayout>
+              
                        <MySessionsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
                />
               <Route
-                path="/quiz/take/:lobbyId"
+       
+                 path="/quiz/take/:lobbyId"
                 element={
                   <ProtectedRoute>
                     <QuizTakingPage />
                    </ProtectedRoute>
                 }
-              />
+ 
+               />
               <Route
                 path="/history"
                 element={
                   
                    <ProtectedRoute>
-                     <AppLayout>
+    
+                    <AppLayout>
                       <ParticipationHistoryPage />
                     </AppLayout>
                   </ProtectedRoute>
                  }
+     
                />
               <Route
                 path="/chatrooms"
                 element={
                   <ProtectedRoute>
                     <AppLayout>
-                      <ChatroomsPage />
+      
+                       <ChatroomsPage />
                     </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
-                path="/quiz/results/:participationId"
+                path="/chatrooms/:roomId"
+                element={
+                  <ProtectedRoute>
+                    <AppLayout>
+                      <ChatRoomPage />
+                    </AppLayout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+ 
+                 path="/quiz/results/:participationId"
                 element={
                   <ProtectedRoute>
                      <AppLayout>
                        <QuizResultPage />
-                    </AppLayout>
+      
+                   </AppLayout>
                   </ProtectedRoute>
                 }
               />
               <Route
                  path="/admin"
-                element={
+       
+                 element={
                   <ProtectedRoute allowedRoles={['admin']}>
                     <AppLayout>
                        <AdminPage />
                     </AppLayout>
-                  </ProtectedRoute>
+        
+                   </ProtectedRoute>
                 }
               />
               <Route
                 path="/settings"
                 element={
-                  <ProtectedRoute>
+              
+                 <ProtectedRoute>
                     <AppLayout>
                       <SettingsPage />
                     </AppLayout>
                    </ProtectedRoute>
-                }
+              
+               }
               />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>

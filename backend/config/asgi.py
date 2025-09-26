@@ -7,14 +7,19 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 
 import os
 from django.core.asgi import get_asgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
+# Initialize the Django application first to populate the app registry.
+# This MUST be done before importing any of your project's modules that
+# in turn import Django models, such as consumers or routing.
+django_asgi_app = get_asgi_application()
+
+# Now it's safe to import modules that rely on the app registry.
 from channels.routing import ProtocolTypeRouter, URLRouter
 from channels.auth import AuthMiddlewareStack
 import game.routing
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
-
-# Get the default HTTP application
-django_asgi_app = get_asgi_application()
 
 application = ProtocolTypeRouter({
     # Django's ASGI application to handle traditional HTTP requests

@@ -15,6 +15,7 @@ from .quizzes import (
 from .lobby import LobbySerializer, LobbyParticipantSerializer
 from .answers import AnswerSerializer, AnswerSubmitSerializer
 from .participation import QuizParticipationSerializer
+from .chat import ChatRoomSerializer, ChatMessageSerializer
 
 __all__ = [
     # tags
@@ -36,4 +37,7 @@ __all__ = [
     "AnswerSubmitSerializer",
     # history
     "QuizParticipationSerializer",
+    # chat
+    "ChatRoomSerializer",
+    "ChatMessageSerializer",
 ]

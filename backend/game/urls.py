@@ -5,7 +5,7 @@ from .views import (
     PublishedQuizzesListView, JoinLobbyView, LobbyStateView, SubmitAnswerView,
     MyParticipationsListView, QuizParticipationDetailView,
 )
-from .views import admin_views, tags_view
+from .views import admin_views, tags_view, chat_views
 
 urlpatterns = [
     # --- Quiz Management (for hosts) ---
@@ -19,6 +19,12 @@ urlpatterns = [
     
     # --- Tags ---
     path('tags/', tags_view.TagListView.as_view(), name='tag-list'),
+
+    # --- Chat ---
+    path('chat/rooms/<int:pk>/delete/', chat_views.ChatRoomDestroyView.as_view(), name='chatroom-delete'),
+    path('chat/rooms/<int:pk>/', chat_views.ChatRoomRetrieveView.as_view(), name='chatroom-retrieve'),
+    path('chat/rooms/', chat_views.ChatRoomListCreateView.as_view(), name='chatroom-list-create'),
+    path('chat/rooms/<int:room_id>/messages/', chat_views.ChatMessageListView.as_view(), name='chatroom-messages'),
     
     # --- Public & Gameplay ---
     path('quizzes/published/', PublishedQuizzesListView.as_view(), name='published-quizzes'),

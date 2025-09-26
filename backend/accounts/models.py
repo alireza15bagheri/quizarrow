@@ -14,7 +14,12 @@ class UserProfile(models.Model):
     role = models.CharField(
         max_length=16, choices=Role.choices, default=Role.PLAYER, verbose_name=_("role")
     )
-
+    notification_delay_seconds = models.PositiveIntegerField(
+        default=0,
+        verbose_name=_("notification delay seconds"),
+        help_text=_("Cooldown period between notifications in seconds."),
+    )
+ 
     def __str__(self):
         return f"{self.user.username} ({self.role})"
 

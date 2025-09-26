@@ -9,6 +9,7 @@ from .lobby import LobbyRoom, LobbyBan, LobbyParticipant
 from .answers import Answer
 from .events import GameEvent
 from .participation import QuizParticipation
+from .chat import ChatRoom, ChatMessage
 
 __all__ = [
     # Question bank
@@ -26,4 +27,7 @@ __all__ = [
     "GameEvent",
     # History
     "QuizParticipation",
+    # Chat
+    "ChatRoom",
+    "ChatMessage",
 ]

@@ -27,3 +27,15 @@ class IsAdminUser(permissions.BasePermission):
             
         profile = getattr(request.user, "profile", None)
         return profile and profile.role == UserProfile.Role.ADMIN
+
+
+class IsChatRoomOwnerOrAdmin(permissions.BasePermission):
+    """
+    Allows access only to the user who created the chat room or an admin.
+    """
+    def has_object_permission(self, request, view, obj):
+        # Admins can delete any room.
+        if request.user.profile.is_admin:
+            return True
+        # The user who created the room can delete it.
+        return obj.created_by == request.user
