@@ -3,33 +3,8 @@ import { getMyQuizzes, updateQuizMeta } from '../lib/api/quizzes'
 import { useNavigate } from 'react-router-dom'
 import { useNotifier } from '../context/NotificationContext'
 import { useConfirm } from '../context/ConfirmationContext'
-
-function toInputLocal(dt) {
-  if (!dt) return ''
-  const d = new Date(dt)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const hours = String(d.getHours()).padStart(2, '0')
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  // datetime-local expects YYYY-MM-DDTHH:MM (no seconds)
-  return `${year}-${month}-${day}T${hours}:${minutes}`
-}
-
-function formatDisplay(dt) {
-  if (!dt) return '—'
-  const d = new Date(dt)
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  let hours = d.getHours()
-  const minutes = String(d.getMinutes()).padStart(2, '0')
-  const ampm = hours >= 12 ? 'PM' : 'AM'
-  hours = hours % 12
-  hours = hours === 0 ? 12 : hours
-  const hoursStr = String(hours).padStart(2, '0')
-  return `${year}-${month}-${day} ${hoursStr}:${minutes} ${ampm}`
-}
+import { toInputLocal } from '../lib/utils/dateUtils'
+import SessionsTable from '../components/sessions/SessionsTable'
 
 export default function MySessionsPage() {
   const [quizzes, setQuizzes] = useState([])
@@ -72,7 +47,6 @@ export default function MySessionsPage() {
     const confirmMsg = nextStatus
       ? 'Once published, this quiz will be visible in the lobby for others to take.'
       : 'Unpublishing this quiz will remove it from the lobby.'
-
     const confirmed = await confirmAction({
       title: nextStatus ? `Publish "${quiz.title}"?` : `Unpublish "${quiz.title}"?`,
       message: confirmMsg,
@@ -124,6 +98,14 @@ export default function MySessionsPage() {
   useEffect(() => {
     fetchData()
   }, [])
+  
+  const handleDateChange = (quizId, value) => {
+    setAvailables((prev) => ({ ...prev, [quizId]: value }))
+  }
+
+  const handleNavigateToEdit = (quizId) => {
+    navigate(`/quizzes/${quizId}/edit`)
+  }
 
   if (loading) return <div>Loading…</div>
   if (error) return <div className="alert alert-error">{error}</div>
@@ -137,71 +119,14 @@ export default function MySessionsPage() {
       {quizzes.length === 0 ? (
         <p>You have not created any quizzes yet.</p>
       ) : (
-        <div className="overflow-x-auto">
-          <table className="table">
-            <thead>
-              <tr>
-                <th>Title</th>
-                <th>Available until</th>
-                <th>Status</th>
-                <th colSpan={2}></th>
-              </tr>
-            </thead>
-            <tbody>
-              {quizzes.map((quiz) => (
-                <tr key={quiz.id}>
-                  <td>{quiz.title}</td>
-                  <td>
-                    {quiz.is_published ? (
-                      <span>{formatDisplay(quiz.available_to_date)}</span>
-                    ) : (
-                      <input
-                        type="datetime-local"
-                        className="input input-sm input-bordered"
-                        value={availables[quiz.id] ?? ''}
-                        onChange={(e) =>
-                          setAvailables((prev) => ({ ...prev, [quiz.id]: e.target.value }))
-                        }
-                      />
-                    )}
-                  </td>
-                  <td>
-                    {quiz.is_published ? (
-                      <span className="badge badge-success">Published</span>
-                    ) : (
-                      <span className="badge badge-ghost">Draft</span>
-                    )}
-                  </td>
-                  <td>
-                    <button
-                      className="btn btn-accent btn-sm text-xl"
-                      onClick={() => navigate(`/quizzes/${quiz.id}/edit`)}
-                    >
-                      ...
-                    </button>
-                  </td>
-                  <td>
-                    <button
-                      className={`btn btn-sm ${
-                        quiz.is_published ? 'btn-warning' : 'btn-primary'
-                      }`}
-                      onClick={() => onTogglePublish(quiz)}
-                      disabled={publishingId === quiz.id}
-                    >
-                      {publishingId === quiz.id
-                        ? quiz.is_published
-                          ? 'Unpublishing…'
-                          : 'Publishing…'
-                        : quiz.is_published
-                          ? 'Unpublish'
-                          : 'Publish'}
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <SessionsTable
+          quizzes={quizzes}
+          publishingId={publishingId}
+          availables={availables}
+          onTogglePublish={onTogglePublish}
+          onDateChange={handleDateChange}
+          onNavigateToEdit={handleNavigateToEdit}
+        />
       )}
     </div>
   )
