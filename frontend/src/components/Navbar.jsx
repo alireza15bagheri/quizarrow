@@ -1,40 +1,30 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useState, useMemo } from 'react'
+import {
+  HomeIcon,
+  RectangleStackIcon,
+  ClockIcon,
+  PlayIcon,
+  UserGroupIcon,
+  UserCircleIcon
+} from '@heroicons/react/24/outline'
 
 function Icon({ name, className = 'w-4 h-4' }) {
-  // Minimal inline icons with no external deps
+  // Using Heroicons for a consistent and professional look
   switch (name) {
     case 'dashboard':
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M3 11h8V3H3v8zm0 10h8v-8H3v8zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
-        </svg>
-      )
+      return <HomeIcon className={className} />
     case 'lobby':
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V20h14v-3.5C15 14.17 10.33 13 8 13zm8 0c-.29 0-.62.02-.97.05A6.1 6.1 0 0118 16.5V20h6v-3.5C24 14.57 19.33 13 16 13z" />
-        </svg>
-      )
+      return <UserGroupIcon className={className} />
     case 'quizzes':
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M19 2H8C6.9 2 6 2.9 6 4v13c0 1.1.9 2 2 2h11v-2H8V4h11v16h2V4c0-1.1-.9-2-2-2zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6z" />
-        </svg>
-      )
+      return <RectangleStackIcon className={className} />
     case 'sessions':
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.11 0-2 .89-2 2v12c0 1.11.89 2 2 2h14c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H5V9h14v9z" />
-        </svg>
-      )
+      return <PlayIcon className={className} />
     case 'history':
-      return (
-        <svg xmlns="http://www.w3.org/2000/svg" className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6a7 7 0 0 1 7-7 7 7 0 0 1 7 7 7 7 0 0 1-7 7v2a9 9 0 0 0 9-9 9 9 0 0 0-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8H12z"/>
-        </svg>
-      )
+      return <ClockIcon className={className} />
+    case 'user':
+      return <UserCircleIcon className={className} />
     default:
       return null
   }
@@ -130,10 +120,14 @@ export default function Navbar() {
       </nav>
 
       {/* Right side actions */}
-      <div className="flex-none gap-2 ml-3">
-        <span className="text-sm text-base-content/70 hidden sm:inline">
+      <div className="flex-none flex items-center gap-2 ml-3">
+        <Link
+          to="/settings"
+          className="hidden sm:inline-flex items-center gap-2 bg-base-200/80 text-base-content/80 font-semibold text-sm px-3 py-1.5 rounded-full hover:bg-base-300 transition-colors"
+        >
+          <Icon name="user" className="w-5 h-5" />
           {user?.username}
-        </span>
+        </Link>
         <button onClick={onLogout} className="ml-2 btn btn-warning btn-sm sm:btn-md">
           Log out
         </button>
