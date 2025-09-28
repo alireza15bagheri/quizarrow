@@ -8,7 +8,8 @@ import {
   ChartPieIcon,
   ChatBubbleOvalLeftEllipsisIcon,
   Cog6ToothIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  UserGroupIcon
 } from '@heroicons/react/24/outline'
 
 // Replaced the old SVG icons with modern ones from Heroicons
@@ -22,6 +23,8 @@ function Icon({ name, className = 'w-8 h-8' }) {
       return <PlayCircleIcon className={className} />
     case 'history':
       return <ChartPieIcon className={className} />
+    case 'lobby':
+      return <UserGroupIcon className={className} />
     case 'chat':
       return <ChatBubbleOvalLeftEllipsisIcon className={className} />
     case 'settings':
@@ -39,6 +42,16 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   
   const allCards = useMemo(() => [
+    {
+      title: 'Lobby',
+      description: 'Join a published quiz from the lobby and test your knowledge.',
+      buttonText: 'Go to Lobby',
+      path: '/lobby',
+      icon: 'lobby',
+      accentClass: 'bg-warning',
+      buttonClass: 'btn-warning',
+      roles: ['player', 'host', 'admin'],
+    },
     {
       title: 'Create Quiz',
       description: 'Build a new quiz from scratch and add your own questions.',
