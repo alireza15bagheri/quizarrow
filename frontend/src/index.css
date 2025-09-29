@@ -19,6 +19,14 @@
     business;
 }
 
+*,
+*::before,
+*::after {
+  transition-property: color, background-color;
+  transition-duration: 300ms;
+  transition-timing-function: ease-in-out;
+}
+
 /* Your custom CSS below */
 html,
 body,
