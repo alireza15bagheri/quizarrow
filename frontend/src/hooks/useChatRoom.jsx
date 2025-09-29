@@ -14,6 +14,7 @@ export default function useChatRoom(roomId) {
   const [messages, setMessages] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
   const [error, setError] = useState(null);
+  const [rateLimitError, setRateLimitError] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef(null);
 
@@ -45,7 +46,14 @@ export default function useChatRoom(roomId) {
 
     ws.onmessage = (event) => {
       const data = JSON.parse(event.data);
-      setMessages((prev) => [...prev, data]);
+      if (data.error === 'rate_limit_exceeded') {
+        setRateLimitError(data.message);
+        // Clear the message after 5 seconds to avoid it being sticky
+        const timer = setTimeout(() => setRateLimitError(null), 5000);
+        return () => clearTimeout(timer);
+      } else {
+        setMessages((prev) => [...prev, data]);
+      }
     };
 
     ws.onclose = () => {
@@ -76,5 +84,5 @@ export default function useChatRoom(roomId) {
     }
   }, []);
 
-  return { room, messages, loadingHistory, error, isConnected, sendMessage };
+  return { room, messages, loadingHistory, error, isConnected, sendMessage, rateLimitError };
 }

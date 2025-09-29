@@ -123,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I18N = True
+USE_I1N = True
 USE_TZ = True
 
 
@@ -176,3 +176,19 @@ CSRF_FAILURE_VIEW = 'accounts.views.csrf_failure_view'
 # Read proxy-related environment variables for production
 USE_X_FORWARDED_HOST = env.bool('USE_X_FORWARDED_HOST', default=False)
 SECURE_PROXY_SSL_HEADER = env.tuple('SECURE_PROXY_SSL_HEADER', default=None)
+
+# --- Caching ---
+# Use the same Redis instance for caching as for channel layers.
+CACHES = {
+    "default": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": f"redis://{env('REDIS_HOST', default='redis')}:6379/1",  # Use db 1 for cache
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+
+# --- Chat Settings ---
+CHAT_RATE_LIMIT_NUM_MESSAGES = env.int('CHAT_RATE_LIMIT_NUM_MESSAGES', default=5)
+CHAT_RATE_LIMIT_SECONDS = env.int('CHAT_RATE_LIMIT_SECONDS', default=10) # e.g., 10 messages per 10 seconds

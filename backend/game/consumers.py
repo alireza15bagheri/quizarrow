@@ -1,4 +1,7 @@
 import json
+import time
+from django.conf import settings
+from django.core.cache import cache
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import ChatRoom, ChatMessage
@@ -65,6 +68,31 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     # Receive message from WebSocket
     async def receive(self, text_data):
+        # --- Rate Limiting Check ---
+        cache_key = f"chat-ratelimit:{self.user.id}:{self.room_id}"
+        num_messages = settings.CHAT_RATE_LIMIT_NUM_MESSAGES
+        seconds = settings.CHAT_RATE_LIMIT_SECONDS
+
+        now = time.time()
+        # Access cache asynchronously
+        history = await database_sync_to_async(cache.get)(cache_key, [])
+
+        # Remove timestamps older than the window
+        while history and history[0] < now - seconds:
+            history.pop(0)
+
+        if len(history) >= num_messages:
+            # Rate limit exceeded, send error and drop message
+            await self.send(text_data=json.dumps({
+                'error': 'rate_limit_exceeded',
+                'message': f'You are sending messages too quickly. Please wait a moment.'
+            }))
+            return
+
+        history.append(now)
+        await database_sync_to_async(cache.set)(cache_key, history, timeout=seconds)
+        
+        # --- Original Logic ---
         text_data_json = json.loads(text_data)
         message = text_data_json["message"]
 
