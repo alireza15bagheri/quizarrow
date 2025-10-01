@@ -1,3 +1,4 @@
+import bleach
 from rest_framework import serializers
 from ..models import Question, Tag
 from .tags import TagSerializer
@@ -32,6 +33,16 @@ class QuestionAdminSerializer(serializers.ModelSerializer):
             "default_points", "created_at", "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "tags"]
+
+    def validate_text(self, value):
+        """Sanitize question text to prevent XSS."""
+        return bleach.clean(value)
+
+    def validate_content(self, value):
+        """Sanitize choices within MCQ questions to prevent XSS."""
+        if 'choices' in value and isinstance(value['choices'], list):
+            value['choices'] = [bleach.clean(str(choice)) for choice in value['choices']]
+        return value
 
     def create(self, validated_data):
         tags = validated_data.pop("tags", [])

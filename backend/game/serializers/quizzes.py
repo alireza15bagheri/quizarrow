@@ -1,3 +1,4 @@
+import bleach
 from rest_framework import serializers
 from ..models import Quiz, QuizQuestion
 from .questions import QuestionPublicSerializer, QuestionAdminSerializer
@@ -42,6 +43,14 @@ class QuizAdminSerializer(serializers.ModelSerializer):
             "created_at", "updated_at", "quiz_questions", "publisher_username",
         ]
         read_only_fields = ["id", "created_at", "updated_at", "tags", "publish_date"]
+
+    def validate_title(self, value):
+        """Sanitize quiz title to prevent XSS."""
+        return bleach.clean(value)
+
+    def validate_description(self, value):
+        """Sanitize quiz description to prevent XSS."""
+        return bleach.clean(value)
 
     def create(self, validated_data):
         qlinks = validated_data.pop("quiz_questions", [])

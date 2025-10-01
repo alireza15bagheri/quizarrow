@@ -1,3 +1,4 @@
+import bleach
 from rest_framework import serializers
 from ..models import ChatRoom, ChatMessage
 
@@ -19,3 +20,7 @@ class ChatRoomSerializer(serializers.ModelSerializer):
         model = ChatRoom
         fields = ["id", "name", "created_by_username", "created_at"]
         read_only_fields = ["id", "created_by_username", "created_at"]
+
+    def validate_name(self, value):
+        """Sanitize chat room name to prevent XSS."""
+        return bleach.clean(value)

@@ -1,5 +1,6 @@
 import json
 import time
+import bleach
 from django.conf import settings
 from django.core.cache import cache
 from channels.generic.websocket import AsyncWebsocketConsumer
@@ -94,7 +95,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
         
         # --- Original Logic ---
         text_data_json = json.loads(text_data)
-        message = text_data_json["message"]
+        # Sanitize message content to prevent XSS
+        message = bleach.clean(text_data_json["message"])
 
         # Save message to database
         new_message = await self.save_message(message)
